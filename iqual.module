@@ -1,0 +1,19 @@
+<?php
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Enlarge and change type of schema metatag fields
+ */
+function iqual_form_alter(&$form, FormStateInterface $form_state, $form_id)
+{
+    if ($form_id == 'node_iqbm_page_form' || $form_id == 'node_iqbm_page_edit_form') {
+        $form['field_meta_tags']['widget'][0]['schema_qa_page']['schema_qa_page_main_entity']['suggestedAnswer']['text']['#maxlength'] = 50000;
+        $form['field_meta_tags']['widget'][0]['schema_qa_page']['schema_qa_page_main_entity']['suggestedAnswer']['text']['#type'] = 'textarea';
+        $form['field_meta_tags']['widget'][0]['schema_qa_page']['schema_qa_page_main_entity']['acceptedAnswer']['text']['#maxlength'] = 50000;
+        $form['field_meta_tags']['widget'][0]['schema_qa_page']['schema_qa_page_main_entity']['acceptedAnswer']['text']['#type'] = 'textarea';
+        $form['field_meta_tags']['widget'][0]['schema_qa_page']['schema_qa_page_main_entity']['acceptedAnswer']['url']['#maxlength'] = 50000;
+        $form['field_meta_tags']['widget'][0]['schema_qa_page']['schema_qa_page_main_entity']['acceptedAnswer']['url']['#type'] = 'textarea';
+        $form['field_meta_tags']['widget'][0]['schema_qa_page']['schema_qa_page_main_entity']['name']['#maxlength'] = 50000;
+        $form['field_meta_tags']['widget'][0]['schema_qa_page']['schema_qa_page_main_entity']['name']['#type'] = 'textarea';
+    }
+}
