@@ -1,0 +1,4 @@
+name: 'iqual'
+type: module
+description: 'iqual custom additions'
+core: 8.x
