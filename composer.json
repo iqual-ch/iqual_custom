@@ -1,0 +1,5 @@
+{
+  "name": "iqual/iqual_custom",
+  "description": "A module for adding iqual additions.",
+  "type": "drupal-custom-module"
+}
