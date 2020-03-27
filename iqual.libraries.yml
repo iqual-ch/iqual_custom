@@ -1,0 +1,4 @@
+yoast_seo:
+  css:
+    component:
+      resources/css/yoast_seo.css: {minified: false}

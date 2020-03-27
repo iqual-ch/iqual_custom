@@ -1,0 +1,6 @@
+iqual.settings:
+  title: 'Iqual Settings'
+  route_name: iqual.settings
+  description: 'Iqual configuration'
+  parent: system.admin_config_services
+  weight: 0
