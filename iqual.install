@@ -17,11 +17,41 @@ function iqual_install() {
  */
 function _set_iqual_base_settings() {
   $config = \Drupal::service('config.factory')->getEditable('pagedesigner.settings');
-  $config->set('filter_format_textarea', 'plain_text');
+  $config->set('filter_format_longtext', 'plain_text');
 
   // Weitere Config setzen
+  $config->set('exclude_dom_elements_before', '#header');
+  $config->set('exclude_dom_elements_after', 'footer');
+
+  $config->set('exclude_dom_elements_before', '#header');
+  $config->set('exclude_dom_elements_after', 'footer');
+
+  $config->set('loading_screen', [
+    'format' => 'pagedesigner',
+    'value' => '<p>Pagedesigner lädt</p>',
+  ]);
+
 
   $config->save();
+
+  // Disable search pattern
+  $author = Role::load('author');
+  if( $author ){
+    $author->revokePermission('use pattern search');
+    $author->save();
+  }
+
+  $editor = Role::load('editor');
+  if( $editor ){
+    $editor->revokePermission('use pattern search');
+    $editor->save();
+  }
+
+  $designer = Role::load('designer');
+  if( $designer ){
+    $designer->revokePermission('use pattern search');
+    $designer->save();
+  }
 }
 
 /**
