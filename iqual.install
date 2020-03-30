@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the iqual module.
+ */
+
+/**
+ * Apply changes to configuration / environment on installation.
+ */
+function iqual_install() {
+  _set_iqual_base_settings();
+}
+
+/**
+ * Set the base settings for iqual websites.
+ */
+function _set_iqual_base_settings() {
+  $config = \Drupal::service('config.factory')->getEditable('pagedesigner.settings');
+  $config->set('filter_format_textarea', 'plain_text');
+
+  // Weitere Config setzen
+
+  $config->save();
+}
+
+/**
+ * Apply changes to configuration / environment on installation.
+ */
+function iqual_update_8001() {
+  _set_iqual_base_settings();
+}
