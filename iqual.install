@@ -23,14 +23,10 @@ function _set_iqual_base_settings() {
   $config->set('exclude_dom_elements_before', '#header');
   $config->set('exclude_dom_elements_after', 'footer');
 
-  $config->set('exclude_dom_elements_before', '#header');
-  $config->set('exclude_dom_elements_after', 'footer');
-
   $config->set('loading_screen', [
     'format' => 'pagedesigner',
     'value' => '<p>Pagedesigner lädt</p>',
   ]);
-
 
   $config->save();
 
