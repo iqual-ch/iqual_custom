@@ -12,6 +12,39 @@ use Drupal\user\Entity\Role;
  */
 function iqual_install() {
   _set_iqual_base_settings();
+
+    $author = Role::load('author');
+  if( $author ){
+    $author->grantPermission('restful get frontendpublishing_transitions');
+    $author->grantPermission('restful patch frontendpublishing_move');
+    $author->grantPermission('restful patch frontendpublishing_publish');
+    $author->grantPermission('restful patch frontendpublishing_unpublish');
+    $author->grantPermission('restful patch frontendpublishing_copy');
+    $author->grantPermission('restful post frontendpublishing_copy');
+    $author->save();
+  }
+
+  $editor = Role::load('editor');
+  if( $editor ){
+    $editor->grantPermission('restful get frontendpublishing_transitions');
+    $editor->grantPermission('restful patch frontendpublishing_move');
+    $editor->grantPermission('restful patch frontendpublishing_publish');
+    $editor->grantPermission('restful patch frontendpublishing_unpublish');
+    $editor->grantPermission('restful patch frontendpublishing_copy');
+    $editor->grantPermission('restful post frontendpublishing_copy');
+    $editor->save();
+  }
+
+  $designer = Role::load('designer');
+  if( $designer ){
+    $designer->grantPermission('restful get frontendpublishing_transitions');
+    $designer->grantPermission('restful patch frontendpublishing_move');
+    $designer->grantPermission('restful patch frontendpublishing_publish');
+    $designer->grantPermission('restful patch frontendpublishing_unpublish');
+    $designer->grantPermission('restful patch frontendpublishing_copy');
+    $designer->grantPermission('restful post frontendpublishing_copy');
+    $designer->save();
+  }
 }
 
 /**
