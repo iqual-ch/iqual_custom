@@ -16,6 +16,7 @@ function iqual_install() {
     $author = Role::load('author');
   if( $author ){
     $author->grantPermission('restful get frontendpublishing_transitions');
+    $author->grantPermission('restful patch frontendpublishing_transitions');
     $author->grantPermission('restful patch frontendpublishing_move');
     $author->grantPermission('restful patch frontendpublishing_publish');
     $author->grantPermission('restful patch frontendpublishing_unpublish');
@@ -27,6 +28,7 @@ function iqual_install() {
   $editor = Role::load('editor');
   if( $editor ){
     $editor->grantPermission('restful get frontendpublishing_transitions');
+    $editor->grantPermission('restful patch frontendpublishing_transitions');
     $editor->grantPermission('restful patch frontendpublishing_move');
     $editor->grantPermission('restful patch frontendpublishing_publish');
     $editor->grantPermission('restful patch frontendpublishing_unpublish');
@@ -38,6 +40,7 @@ function iqual_install() {
   $designer = Role::load('designer');
   if( $designer ){
     $designer->grantPermission('restful get frontendpublishing_transitions');
+    $designer->grantPermission('restful patch frontendpublishing_transitions');
     $designer->grantPermission('restful patch frontendpublishing_move');
     $designer->grantPermission('restful patch frontendpublishing_publish');
     $designer->grantPermission('restful patch frontendpublishing_unpublish');
