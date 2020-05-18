@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @file
+ */
+
 use Drupal\user\Entity\Role;
 
 /**
@@ -13,8 +17,8 @@ use Drupal\user\Entity\Role;
 function iqual_install() {
   _set_iqual_base_settings();
 
-    $author = Role::load('author');
-  if( $author ){
+  $author = Role::load('author');
+  if ($author) {
     $author->grantPermission('restful get frontendpublishing_transitions');
     $author->grantPermission('restful patch frontendpublishing_transitions');
     $author->grantPermission('restful patch frontendpublishing_move');
@@ -26,7 +30,7 @@ function iqual_install() {
   }
 
   $editor = Role::load('editor');
-  if( $editor ){
+  if ($editor) {
     $editor->grantPermission('restful get frontendpublishing_transitions');
     $editor->grantPermission('restful patch frontendpublishing_transitions');
     $editor->grantPermission('restful patch frontendpublishing_move');
@@ -38,7 +42,7 @@ function iqual_install() {
   }
 
   $designer = Role::load('designer');
-  if( $designer ){
+  if ($designer) {
     $designer->grantPermission('restful get frontendpublishing_transitions');
     $designer->grantPermission('restful patch frontendpublishing_transitions');
     $designer->grantPermission('restful patch frontendpublishing_move');
@@ -57,7 +61,7 @@ function _set_iqual_base_settings() {
   $config = \Drupal::service('config.factory')->getEditable('pagedesigner.settings');
   $config->set('filter_format_longtext', 'plain_text');
 
-  // Weitere Config setzen
+  // Weitere Config setzen.
   $config->set('exclude_dom_elements_before', '#header');
   $config->set('exclude_dom_elements_after', 'footer');
 
@@ -68,21 +72,21 @@ function _set_iqual_base_settings() {
 
   $config->save();
 
-  // Disable search pattern
+  // Disable search pattern.
   $author = Role::load('author');
-  if( $author ){
+  if ($author) {
     $author->revokePermission('use pattern search');
     $author->save();
   }
 
   $editor = Role::load('editor');
-  if( $editor ){
+  if ($editor) {
     $editor->revokePermission('use pattern search');
     $editor->save();
   }
 
   $designer = Role::load('designer');
-  if( $designer ){
+  if ($designer) {
     $designer->revokePermission('use pattern search');
     $designer->save();
   }
@@ -93,4 +97,41 @@ function _set_iqual_base_settings() {
  */
 function iqual_update_8001() {
   _set_iqual_base_settings();
+}
+
+/**
+ * Update the composer patches file with www redirection patch.
+ */
+function iqual_update_8002() {
+  $patchFile = 'composer.patches.json';
+  $modulePath = drupal_get_path('module', 'iqual');
+
+  // Store current directory and switch to /var/www.
+  $currentDirectory = getcwd();
+  chdir('/var/www');
+
+  // Add composer patches file.
+  exec('composer config extra.patches-file composer.patches.json');
+
+  // Create patches directory
+  if (!is_dir('/var/www/patches/')) {
+    mkdir('/var/www/patches/');
+  }
+
+  // Move www redirection patch patch.
+  copy('/var/www/public/' . $modulePath . '/patches/20200512_redirect_domain_keep_path.patch', '/var/www/patches/20200512_redirect_domain_keep_path.patch');
+
+  // Add patch to composer.patches.json.
+  if (file_exists('/var/www/' . $patchFile)) {
+    $currentJson = json_decode(file_get_contents('/var/www/' . $patchFile), TRUE);
+    $currentJson['patches']['drupal/redirect'] = ["Keep path on domain redirect" => "/var/www/patches/20200512_redirect_domain_keep_path.patch"];
+    file_put_contents('/var/www/' . $patchFile, json_encode($currentJson, JSON_UNESCAPED_SLASHES));
+  }
+  else {
+    file_put_contents('/var/www/' . $patchFile, '{"patches": {"drupal/redirect": {"Keep path on domain redirect": "/var/www/patches/20200512_redirect_domain_keep_path.patch"}}}');
+  }
+
+  // Change back to working directory.
+  chdir($currentDirectory);
+
 }
