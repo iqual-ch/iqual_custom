@@ -5,6 +5,7 @@
  */
 
 use Drupal\user\Entity\Role;
+use Drupal\pagedesigner\Entity\Element;
 
 /**
  * @file
@@ -113,7 +114,7 @@ function iqual_update_8002() {
   // Add composer patches file.
   exec('composer config extra.patches-file composer.patches.json');
 
-  // Create patches directory
+  // Create patches directory.
   if (!is_dir('/var/www/patches/')) {
     mkdir('/var/www/patches/');
   }
@@ -134,4 +135,52 @@ function iqual_update_8002() {
   // Change back to working directory.
   chdir($currentDirectory);
 
+}
+
+/**
+ * Update the container translation config and set correct entity reference.
+ */
+function iqual_update_8003() {
+
+  $config_factory = \Drupal::configFactory();
+  $config = $config_factory->getEditable('core.base_field_override.pagedesigner_element.container.user_id');
+  $config->set('translatable', FALSE);
+  $config->save(TRUE);
+  $config = $config_factory->getEditable('core.base_field_override.pagedesigner_element.container.entity');
+  $config->set('translatable', FALSE);
+  $config->save(TRUE);
+
+  $eids = \Drupal::entityQuery('pagedesigner_element')->condition('type', 'container')->execute();
+  foreach ($eids as $eid) {
+    Element::load($eid)->save();
+  }
+
+  foreach ($eids as $eid) {
+    $container = Element::load($eid);
+    foreach (['de', 'fr', 'en'] as $langcode) {
+      if ($container->hasTranslation($langcode)) {
+        $container = $container->getTranslation($langcode);
+        _iqual_update_8003_setEntity($container, $container);
+      }
+    }
+  }
+
+}
+
+/**
+ * Update the entity based on the container.
+ */
+function _iqual_update_8003_setEntity(Element $element, $container) {
+  if ($element->entity->target_id != $container->entity->target_id) {
+    $element->entity->target_id = $container->entity->target_id;
+    $element->save();
+  }
+  foreach ($element->children as $item) {
+    _iqual_update_8003_setEntity($item->entity, $container);
+  }
+  if ($element->hasField('field_styles')) {
+    foreach ($element->field_styles as $item) {
+      _iqual_update_8003_setEntity($item->entity, $container);
+    }
+  }
 }
