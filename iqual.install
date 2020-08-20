@@ -6,7 +6,6 @@
 
 use Drupal\user\Entity\Role;
 use Drupal\pagedesigner\Entity\Element;
-use Drupal\Core\Language\LanguageManager;
 use Drupal\Core\Language\LanguageInterface;
 
 /**
@@ -160,9 +159,6 @@ function iqual_update_8003() {
 
   // Make sure that container translations are correct.
   $eids = \Drupal::entityQuery('pagedesigner_element')->condition('type', 'container')->execute();
-  foreach ($eids as $eid) {
-    Element::load($eid)->save();
-  }
 
   // Update all children.
   foreach ($eids as $eid) {
@@ -170,8 +166,11 @@ function iqual_update_8003() {
     $languages = \Drupal::service('language_manager')->getLanguages(LanguageInterface::STATE_ALL);
     foreach ($languages as $language) {
       if ($container->hasTranslation($language->getId())) {
-        $container = $container->getTranslation($language->getId());
-        _iqual_update_8003_setEntity($container, $container);
+        $containerTranslation = $container->getTranslation($language->getId());
+        $containerTranslation->user_id->target_id = $container->user_id->target_id;
+        $containerTranslation->entity->target_id = $container->entity->target_id;
+        $containerTranslation->save();
+        _iqual_update_8003_setEntity($containerTranslation, $container);
       }
     }
   }
