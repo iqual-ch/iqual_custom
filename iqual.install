@@ -141,7 +141,7 @@ function iqual_update_8002() {
 /**
  * Update the container translation config and set correct entity reference.
  */
-function iqual_update_8003() {
+function _iqual_update_8003() {
   // Update configuration for container translations.
   $config_factory = \Drupal::configFactory();
   $config = $config_factory->getEditable('core.base_field_override.pagedesigner_element.container.user_id');
