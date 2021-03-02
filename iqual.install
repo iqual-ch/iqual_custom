@@ -19,7 +19,6 @@ use Drupal\Core\Field\Entity\BaseFieldOverride;
  */
 function iqual_install() {
   _set_iqual_base_settings();
-  iqual_update_8003();
   $author = Role::load('author');
   if ($author) {
     $author->grantPermission('restful get frontendpublishing_transitions');
