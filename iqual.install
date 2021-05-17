@@ -169,6 +169,38 @@ function iqual_update_8003() {
 }
 
 /**
+ * Implements hook_update_N().
+ *
+ * Delivers configuration updates for multilingual cross-linking via Linkit.
+ * @see US-458, US-530
+ */
+function iqual_update_8004() {
+  $config_storage = \Drupal::service('config.storage');
+
+  // Linkit matchers config update.
+  $default_linkit_profile = $config_storage->read('linkit.linkit_profile.default_linkit');
+  $matchers = $default_linkit_profile['matchers'];
+  foreach ($matchers as $matcher_id => $matcher) {
+    $default_linkit_profile['matchers'][$matcher_id]['settings']['translated_entities'] = 3;
+    $default_linkit_profile['matchers'][$matcher_id]['settings']['hide_untranslated_entities'] = FALSE;
+  }
+  $config_storage->write('linkit.linkit_profile.default_linkit', $default_linkit_profile);
+
+  // Pagedesigner filter form config update.
+  $filter_format_pagedesigner = $config_storage->read('filter.format.pagedesigner');
+  $filter_format_pagedesigner['dependencies']['module'][] = 'linkit';
+  $filter_format_pagedesigner['filters']['linkit'] = [
+    'id' => 'linkit',
+    'provider' => 'linkit',
+    'status' => TRUE,
+    'settings' => [
+      'title' => TRUE,
+    ],
+  ];
+  $config_storage->write('filter.format.pagedesigner', $filter_format_pagedesigner);
+}
+
+/**
  * Create or adapt the base field override (translatable) on container fields.
  */
 function _iqual_update_8003_setContainerFieldOverride($fieldName) {
