@@ -1,6 +1,7 @@
 <?php
-use Drupal\Core\Form\FormStateInterface;
 
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\language\Entity\ConfigurableLanguage;
 /**
  * Apply iqual settings to forms.
  */
@@ -11,5 +12,19 @@ function iqual_form_alter(&$form, FormStateInterface $form_state, $form_id)
     if ($config->get('hide_title_slug')) {
         $form['field_yoast_seo']['widget'][0]['yoast_seo']['#attached']['library'][] = "iqual/yoast_seo";
     }
+  }
+}
+
+/**
+ * Implements hook_entity_type_alter().
+ *
+ * Extend Language config entity.
+ */
+function iqual_entity_type_alter(&$entity_types) {
+  if (isset($entity_types['configurable_language'])) {
+    $formHandlerClasses = $entity_types['configurable_language']->getHandlerClasses()['form'];
+    $formHandlerClasses['default'] = 'Drupal\iqual\Form\LanguageEditForm';
+    $formHandlerClasses['edit'] = 'Drupal\iqual\Form\LanguageEditForm';
+    $entity_types['configurable_language']->setHandlerClass('form', $formHandlerClasses);
   }
 }
