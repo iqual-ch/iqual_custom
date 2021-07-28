@@ -28,3 +28,33 @@ function iqual_entity_type_alter(&$entity_types) {
     $entity_types['configurable_language']->setHandlerClass('form', $formHandlerClasses);
   }
 }
+
+
+/**
+ * Implements hook_metatags_alter().
+ *
+ * Replace lang code with locale code in hreflang.
+ */
+function iqual_page_attachments_alter(array &$attachments) {
+  foreach ($attachments['#attached']['html_head'] as $index => $attachment) {
+    if (substr($attachment[1], 0, 21) == 'hreflang_per_language') {
+      $languageCode = $attachment[0]['#attributes']['hreflang'];
+      $languageEntity = ConfigurableLanguage::load($languageCode);
+      $languageLocaleCode = FALSE;
+      if ($languageEntity && $languageEntity->get('third_party_settings') && is_array($languageEntity->get('third_party_settings'))) {
+        $languageThridPartySettings = $languageEntity->get('third_party_settings');
+        if ($languageThridPartySettings && is_array($languageThridPartySettings)) {
+          if (array_key_exists('iqual', $languageThridPartySettings) && is_array($languageThridPartySettings)) {
+            if (array_key_exists('locale', $languageThridPartySettings['iqual'])) {
+              $languageLocaleCode = $languageEntity->get('third_party_settings')['iqual']['locale'];
+            }
+          }
+        }
+      }
+      if ($languageLocaleCode) {
+        $attachments['#attached']['html_head'][$index][0]['#attributes']['hreflang'] = $languageLocaleCode;
+      }
+    }
+  }
+
+}
