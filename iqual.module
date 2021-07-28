@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains iq_faq.module.
+ * Contains iqual.module.
  */
 
 use Drupal\Core\Form\FormStateInterface;
