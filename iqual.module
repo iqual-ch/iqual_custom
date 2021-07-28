@@ -23,24 +23,6 @@ function iqual_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 }
 
 /**
- * Implements hook_preprocess_node_add_list().
- *
- * Remove add page links for defined content types.
- */
-function iqual_preprocess_node_add_list(&$vars) {
-
-  $config = \Drupal::config('iqual.settings');
-  if ($config->get('hide_node_add_links')) {
-    $contentTypesToRemmove = $config->get('hide_node_add_links');
-  }
-
-  foreach ($contentTypesToRemmove as $type) {
-    unset($vars['content'][$type]);
-    unset($vars['types'][$type]);
-  }
-}
-
-/**
  * Implements hook_entity_type_alter().
  *
  * Extend Language config entity.
@@ -60,24 +42,40 @@ function iqual_entity_type_alter(&$entity_types) {
  * Replace lang code with locale code in hreflang.
  */
 function iqual_page_attachments_alter(array &$attachments) {
-  foreach ($attachments['#attached']['html_head'] as $index => $attachment) {
-    if (substr($attachment[1], 0, 21) == 'hreflang_per_language') {
-      $languageCode = $attachment[0]['#attributes']['hreflang'];
-      $languageEntity = ConfigurableLanguage::load($languageCode);
-      $languageLocaleCode = FALSE;
-      if ($languageEntity && $languageEntity->get('third_party_settings') && is_array($languageEntity->get('third_party_settings'))) {
-        $languageThridPartySettings = $languageEntity->get('third_party_settings');
-        if ($languageThridPartySettings && is_array($languageThridPartySettings)) {
-          if (array_key_exists('iqual', $languageThridPartySettings) && is_array($languageThridPartySettings)) {
-            if (array_key_exists('locale', $languageThridPartySettings['iqual'])) {
-              $languageLocaleCode = $languageEntity->get('third_party_settings')['iqual']['locale'];
-            }
-          }
-        }
-      }
+  foreach ($attachments['#attached']['html_head_link'] as $index => $attachment) {
+    if ($attachment[0]['rel'] == 'alternate') {
+      $languageLocaleCode = _get_locale_from_langcode($attachment[0]['hreflang']);
       if ($languageLocaleCode) {
-        $attachments['#attached']['html_head'][$index][0]['#attributes']['hreflang'] = $languageLocaleCode;
+        $attachments['#attached']['html_head_link'][$index][0]['hreflang'] = $languageLocaleCode;
+      }
+    }
+
+    foreach ($attachments['#attached']['html_head'] as $index => $attachment) {
+      if (substr($attachment[1], 0, 21) == 'hreflang_per_language') {
+        $languageLocaleCode = _get_locale_from_langcode($attachment[0]['#attributes']['hreflang']);
+        if ($languageLocaleCode) {
+          $attachments['#attached']['html_head'][$index][0]['#attributes']['hreflang'] = $languageLocaleCode;
+        }
       }
     }
   }
+}
+
+/**
+ * Returns a language entity's locele code base on it's language code.
+ */
+function _get_locale_from_langcode($languageCode) {
+  $languageEntity = ConfigurableLanguage::load($languageCode);
+  $languageLocaleCode = FALSE;
+  if ($languageEntity && $languageEntity->get('third_party_settings') && is_array($languageEntity->get('third_party_settings'))) {
+    $languageThridPartySettings = $languageEntity->get('third_party_settings');
+    if ($languageThridPartySettings && is_array($languageThridPartySettings)) {
+      if (array_key_exists('iqual', $languageThridPartySettings) && is_array($languageThridPartySettings)) {
+        if (array_key_exists('locale', $languageThridPartySettings['iqual'])) {
+          $languageLocaleCode = $languageEntity->get('third_party_settings')['iqual']['locale'];
+        }
+      }
+    }
+  }
+  return $languageLocaleCode;
 }
