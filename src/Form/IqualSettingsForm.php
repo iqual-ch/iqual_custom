@@ -7,7 +7,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\Entity\NodeType;
 
 /**
- *
+ * Custom iqual config.
  */
 class IqualSettingsForm extends ConfigFormBase {
 
@@ -36,31 +36,31 @@ class IqualSettingsForm extends ConfigFormBase {
 
     $form['iqual_settings'] = [
       '#type' => 'vertical_tabs',
-      '#title' => t('Iqual Settings'),
+      '#title' => $this->t('Iqual Settings'),
     ];
 
     $form['general'] = [
       '#type' => 'details',
-      '#title' => t('General settings'),
+      '#title' => $this->t('General settings'),
       '#open' => TRUE,
       '#group' => 'iqual_settings',
     ];
-    $form['general'] = $this->addGeneralSettings($form['general'], $form_state, $config );
+    $form['general'] = $this->addGeneralSettings($form['general'], $form_state, $config);
     return parent::buildForm($form, $form_state);
 
   }
 
   /**
-   *
+   * Add fields to "General" group.
    */
-  protected function addGeneralSettings(array $form, FormStateInterface $form_state, $config ) {
+  protected function addGeneralSettings(array $form, FormStateInterface $form_state, $config) {
     $form['yoast'] = [
       '#type'  => 'fieldset',
       '#title' => $this->t('Yoast'),
     ];
     $form['yoast']['hide_title_slug'] = [
       '#type' => 'checkbox',
-      '#title' => t('Hide title and slug input'),
+      '#title' => $this->t('Hide title and slug input'),
       '#default_value' => $config->get('hide_title_slug'),
     ];
 
@@ -76,7 +76,7 @@ class IqualSettingsForm extends ConfigFormBase {
     ];
     $form['ux']['hide_node_add_links'] = [
       '#type' => 'checkboxes',
-      '#title' => t('Hide Links ond node/add page'),
+      '#title' => $this->t('Hide Links ond node/add page'),
       '#options' => $options,
       '#default_value' => $config->get('hide_node_add_links') ? $config->get('hide_node_add_links') : [],
     ];
@@ -85,9 +85,9 @@ class IqualSettingsForm extends ConfigFormBase {
   }
 
   /**
-   *
+   * Add fields to "Performance" group.
    */
-  protected function addPerformanceSettings(array $form, FormStateInterface $form_state, $config ) {
+  protected function addPerformanceSettings(array $form, FormStateInterface $form_state, $config) {
     return $form;
   }
 
