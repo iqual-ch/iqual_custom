@@ -4,6 +4,7 @@ namespace Drupal\iqual\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\Entity\NodeType;
 
 /**
  *
@@ -62,8 +63,27 @@ class IqualSettingsForm extends ConfigFormBase {
       '#title' => t('Hide title and slug input'),
       '#default_value' => $config->get('hide_title_slug'),
     ];
+
+    // Define which content types should be shown/hidden on the node/add page.
+    $nodeTypes = NodeType::loadMultiple();
+    $options = [];
+    foreach ($nodeTypes as $nodeType) {
+      $options[$nodeType->id()] = $nodeType->label();
+    }
+    $form['ux'] = [
+      '#type'  => 'fieldset',
+      '#title' => $this->t('UX settings'),
+    ];
+    $form['ux']['hide_node_add_links'] = [
+      '#type' => 'checkboxes',
+      '#title' => t('Hide Links ond node/add page'),
+      '#options' => $options,
+      '#default_value' => $config->get('hide_node_add_links') ? $config->get('hide_node_add_links') : [],
+    ];
+
     return $form;
   }
+
   /**
    *
    */
@@ -85,6 +105,7 @@ class IqualSettingsForm extends ConfigFormBase {
     parent::submitForm($form, $form_state);
     $config = $this->config('iqual.settings');
     $config->set('hide_title_slug', $form_state->getValue('hide_title_slug'));
+    $config->set('hide_node_add_links', $form_state->getValue('hide_node_add_links'));
     $config->save();
   }
 
