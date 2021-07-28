@@ -1,7 +1,0 @@
-iqual.settings:
-  path: "/admin/config/iqual/settings"
-  defaults:
-    _title: "Iqual Settings"
-    _form: '\Drupal\iqual\Form\IqualSettingsForm'
-  requirements:
-    _permission: "administer iqual settings"
