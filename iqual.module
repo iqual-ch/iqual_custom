@@ -36,32 +36,46 @@ function iqual_entity_type_alter(&$entity_types) {
   }
 }
 
-
 /**
  * Implements hook_metatags_alter().
  *
  * Replace lang code with locale code in hreflang.
  */
 function iqual_page_attachments_alter(array &$attachments) {
-  foreach ($attachments['#attached']['html_head'] as $index => $attachment) {
-    if (substr($attachment[1], 0, 21) == 'hreflang_per_language') {
-      $languageCode = $attachment[0]['#attributes']['hreflang'];
-      $languageEntity = ConfigurableLanguage::load($languageCode);
-      $languageLocaleCode = FALSE;
-      if ($languageEntity && $languageEntity->get('third_party_settings') && is_array($languageEntity->get('third_party_settings'))) {
-        $languageThridPartySettings = $languageEntity->get('third_party_settings');
-        if ($languageThridPartySettings && is_array($languageThridPartySettings)) {
-          if (array_key_exists('iqual', $languageThridPartySettings) && is_array($languageThridPartySettings)) {
-            if (array_key_exists('locale', $languageThridPartySettings['iqual'])) {
-              $languageLocaleCode = $languageEntity->get('third_party_settings')['iqual']['locale'];
-            }
-          }
-        }
-      }
+  foreach ($attachments['#attached']['html_head_link'] as $index => $attachment) {
+    if ($attachment[0]['rel'] == 'alternate') {
+      $languageLocaleCode = _get_locale_from_langcode($attachment[0]['hreflang']);
       if ($languageLocaleCode) {
-        $attachments['#attached']['html_head'][$index][0]['#attributes']['hreflang'] = $languageLocaleCode;
+        $attachments['#attached']['html_head_link'][$index][0]['hreflang'] = $languageLocaleCode;
+      }
+    }
+
+    foreach ($attachments['#attached']['html_head'] as $index => $attachment) {
+      if (substr($attachment[1], 0, 21) == 'hreflang_per_language') {
+        $languageLocaleCode = _get_locale_from_langcode($attachment[0]['#attributes']['hreflang']);
+        if ($languageLocaleCode) {
+          $attachments['#attached']['html_head'][$index][0]['#attributes']['hreflang'] = $languageLocaleCode;
+        }
       }
     }
   }
+}
 
+/**
+ * Returns a language entity's locele code base on it's language code.
+ */
+function _get_locale_from_langcode($languageCode) {
+  $languageEntity = ConfigurableLanguage::load($languageCode);
+  $languageLocaleCode = FALSE;
+  if ($languageEntity && $languageEntity->get('third_party_settings') && is_array($languageEntity->get('third_party_settings'))) {
+    $languageThridPartySettings = $languageEntity->get('third_party_settings');
+    if ($languageThridPartySettings && is_array($languageThridPartySettings)) {
+      if (array_key_exists('iqual', $languageThridPartySettings) && is_array($languageThridPartySettings)) {
+        if (array_key_exists('locale', $languageThridPartySettings['iqual'])) {
+          $languageLocaleCode = $languageEntity->get('third_party_settings')['iqual']['locale'];
+        }
+      }
+    }
+  }
+  return $languageLocaleCode;
 }
