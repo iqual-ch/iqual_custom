@@ -23,6 +23,24 @@ function iqual_form_alter(&$form, FormStateInterface $form_state, $form_id) {
 }
 
 /**
+ * Implements hook_preprocess_node_add_list().
+ *
+ * Remove add page links for defined content types.
+ */
+function iqual_preprocess_node_add_list(&$vars) {
+
+  $config = \Drupal::config('iqual.settings');
+  if ($config->get('hide_node_add_links')) {
+    $contentTypesToRemmove = $config->get('hide_node_add_links');
+  }
+
+  foreach ($contentTypesToRemmove as $type) {
+    unset($vars['content'][$type]);
+    unset($vars['types'][$type]);
+  }
+}
+
+/**
  * Implements hook_entity_type_alter().
  *
  * Extend Language config entity.
