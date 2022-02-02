@@ -202,3 +202,17 @@ function _iqual_update_8003_setEntity(Element $element, $container) {
     }
   }
 }
+
+/**
+ * Update the primary google container.
+ */
+function iqual_update_8004() {
+  $config = \Drupal::service('config.factory')->getEditable('google_tag.container.primary');
+  $statuses = $config->get('status_list');
+  $statuses = str_replace("404\n", '', str_replace("\n404", '', $statuses));
+  if (!strpos($statuses, '410')) {
+    $statuses .= "\n410";
+  }
+  $config->set('status_list', $statuses);
+  $config->save();
+}
