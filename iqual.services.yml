@@ -1,0 +1,5 @@
+services:
+  http_middleware.iqual_redirect:
+    class: Drupal\iqual\Middleware\Redirect
+    tags:
+      - { name: http_middleware}
