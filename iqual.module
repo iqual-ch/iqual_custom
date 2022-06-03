@@ -1,15 +1,19 @@
 <?php
+
+/**
+ * @file
+ */
+
 use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Apply iqual settings to forms.
  */
-function iqual_form_alter(&$form, FormStateInterface $form_state, $form_id)
-{
+function iqual_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   if (!empty($form['field_yoast_seo'])) {
     $config = \Drupal::config('iqual.settings');
     if ($config->get('hide_title_slug')) {
-        $form['field_yoast_seo']['widget'][0]['yoast_seo']['#attached']['library'][] = "iqual/yoast_seo";
+      $form['field_yoast_seo']['widget'][0]['yoast_seo']['#attached']['library'][] = "iqual/yoast_seo";
     }
   }
 }
