@@ -1,15 +1,34 @@
 <?php
+
+/**
+ * @file
+ */
+
+use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\node\Entity\Node;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Language\LanguageInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Apply iqual settings to forms.
  */
-function iqual_form_alter(&$form, FormStateInterface $form_state, $form_id)
-{
+function iqual_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   if (!empty($form['field_yoast_seo'])) {
     $config = \Drupal::config('iqual.settings');
     if ($config->get('hide_title_slug')) {
-        $form['field_yoast_seo']['widget'][0]['yoast_seo']['#attached']['library'][] = "iqual/yoast_seo";
+      $form['field_yoast_seo']['widget'][0]['yoast_seo']['#attached']['library'][] = "iqual/yoast_seo";
     }
+  }
+}
+
+/**
+ *
+ */
+function iqual_node_view(array &$build, Node $entity, EntityViewDisplayInterface $display, $view_mode) {
+  $language = \Drupal::languageManager()->getCurrentLanguage(LanguageInterface::TYPE_CONTENT);
+  if ($entity->hasTranslation($language->getId())) {
+    $response = new Response('', 404);
+    \Drupal::service('http_middleware.iqual_redirect')->setRedirectResponse($response);
   }
 }
