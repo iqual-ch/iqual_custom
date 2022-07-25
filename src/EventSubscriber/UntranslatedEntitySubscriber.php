@@ -27,6 +27,9 @@ class UntranslatedEntitySubscriber implements EventSubscriberInterface {
     if ($event->getRequestType() === HttpKernelInterface::MASTER_REQUEST) {
       $node = \Drupal::routeMatch()->getParameter('node');
       if ($node instanceof NodeInterface) {
+        if (\Drupal::service('router.admin_context')->isAdminRoute()) {
+          return;
+        }
         $language = \Drupal::languageManager()->getCurrentLanguage(LanguageInterface::TYPE_CONTENT);
         if (!$node->hasTranslation($language->getId())) {
           throw new NotFoundHttpException();
