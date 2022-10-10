@@ -107,7 +107,7 @@ function iqual_update_8001() {
  */
 function iqual_update_8002() {
   $patchFile = 'composer.patches.json';
-  $modulePath = drupal_get_path('module', 'iqual');
+  $modulePath = \Drupal::service('extension.list.module')->getPath('iqual');
 
   // Store current directory and switch to /var/www.
   $currentDirectory = getcwd();
