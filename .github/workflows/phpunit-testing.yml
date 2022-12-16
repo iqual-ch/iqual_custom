@@ -1,0 +1,20 @@
+name: PHPUnit-based testing
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, reopened]
+
+jobs:
+  run-phpunit-tests:
+    name: PHPUnit tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Run PHPUnit tests
+      shell: bash
+      run: |
+        docker run -it --rm -v $PWD:/opt/drupal/web/modules/custom/iqual_custom -w /opt/drupal drupal:9.4.9-php8.1-fpm-alpine3.17 sh -c "composer require --dev phpunit/phpunit symfony/phpunit-bridge behat/mink mikey179/vfsstream phpspec/prophecy-phpunit && phpunit --bootstrap web/core/tests/bootstrap.php web/modules/custom/iqual_custom/tests/"
