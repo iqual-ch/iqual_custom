@@ -37,5 +37,6 @@ function iqual_node_access(NodeInterface $node, $op, AccountInterface $account) 
     $access = AccessResult::neutral();
   }
   $access->addCacheableDependency($node);
+  $access->addCacheableDependency($account->getRoles());
   return $access;
 }
