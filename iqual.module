@@ -4,7 +4,11 @@
  * @file
  */
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Language\LanguageInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\node\NodeInterface;
 
 /**
  * Apply iqual settings to forms.
@@ -16,4 +20,22 @@ function iqual_form_alter(&$form, FormStateInterface $form_state, $form_id) {
       $form['field_yoast_seo']['widget'][0]['yoast_seo']['#attached']['library'][] = "iqual/yoast_seo";
     }
   }
+}
+
+/**
+ * Implements hook_node_access().
+ */
+function iqual_node_access(NodeInterface $node, $op, AccountInterface $account) {
+  if (!$account->isAnonymous()) {
+    return;
+  }
+  $langcode = \Drupal::languageManager()->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
+  if (!$node->hasTranslation($langcode)) {
+    $access = AccessResult::forbidden();
+  }
+  else {
+    $access = AccessResult::neutral();
+  }
+  $access->addCacheableDependency($node);
+  return $access;
 }
