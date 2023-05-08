@@ -1,0 +1,11 @@
+services:
+  http_middleware.iqual_redirect:
+    class: Drupal\iqual\Middleware\Redirect
+    tags:
+      - { name: http_middleware}
+  iqual.untranslated_entity_subscriber:
+    class: Drupal\iqual\EventSubscriber\UntranslatedEntitySubscriber
+    arguments: []
+    tags:
+      - {name: event_subscriber}
+
