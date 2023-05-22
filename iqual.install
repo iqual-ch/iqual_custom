@@ -218,3 +218,18 @@ function iqual_update_8004() {
     }
   }
 }
+
+/**
+ * Disable splash page using drupal/disable_page_slash_node.
+ */
+function iqual_update_9000() {
+  $moduleList = \Drupal::service('extension.list.module');
+  if ($moduleList->exists('disable_page_slash_node')) {
+    \Drupal::service('module_installer')->install(['disable_page_slash_node']);
+  }
+
+  \Drupal::configFactory()->getEditable('system.site')
+    ->set('site_disable_page_node', 0)
+    ->set('site_disable_page_node_404', 0)
+    ->save();
+}
