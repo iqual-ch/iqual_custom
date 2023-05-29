@@ -1,8 +1,5 @@
 {
   "name": "iqual/iqual_custom",
   "description": "A module for adding iqual additions.",
-  "type": "drupal-custom-module",
-  "require": {
-    "drupal/disable_page_slash_node": "^1.0"
-  }
+  "type": "drupal-custom-module"
 }
