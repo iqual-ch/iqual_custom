@@ -153,9 +153,10 @@ function iqual_update_8003() {
   // Make sure that container translations are correct.
   $eids = \Drupal::entityQuery('pagedesigner_element')->condition('type', 'container')->execute();
 
+  $storage = \Drupal::entityTypeManager()->getStorage('pagedesigner_element');
   // Update all children.
   foreach ($eids as $eid) {
-    $container = Element::load($eid);
+    $container = $storage->load($eid);
     $languages = \Drupal::service('language_manager')->getLanguages(LanguageInterface::STATE_ALL);
     foreach ($languages as $language) {
       if ($container->hasTranslation($language->getId())) {
@@ -166,6 +167,7 @@ function iqual_update_8003() {
         _iqual_update_8003_setEntity($containerTranslation, $container);
       }
     }
+    $storage->resetCache([$container->id()]);
   }
 }
 
@@ -202,6 +204,7 @@ function _iqual_update_8003_setEntity(Element $element, $container) {
       _iqual_update_8003_setEntity($item->entity, $container);
     }
   }
+  \Drupal::entityTypeManager()->getStorage('pagedesigner_element')->resetCache([$element->id()]);
 }
 
 /**
@@ -217,19 +220,4 @@ function iqual_update_8004() {
       echo $process->getErrorOutput();
     }
   }
-}
-
-/**
- * Disable splash page using drupal/disable_page_slash_node.
- */
-function iqual_update_9000() {
-  $moduleList = \Drupal::service('extension.list.module');
-  if ($moduleList->exists('disable_page_slash_node')) {
-    \Drupal::service('module_installer')->install(['disable_page_slash_node']);
-  }
-
-  \Drupal::configFactory()->getEditable('system.site')
-    ->set('site_disable_page_node', 0)
-    ->set('site_disable_page_node_404', 0)
-    ->save();
 }
