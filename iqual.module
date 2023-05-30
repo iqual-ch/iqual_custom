@@ -31,12 +31,13 @@ function iqual_preprocess_node_add_list(&$vars) {
 
   $config = \Drupal::config('iqual.settings');
   if ($config->get('hide_node_add_links')) {
-    $contentTypesToRemmove = $config->get('hide_node_add_links');
-  }
-
-  foreach ($contentTypesToRemmove as $type) {
-    unset($vars['content'][$type]);
-    unset($vars['types'][$type]);
+    $contentTypesToRemove = $config->get('hide_node_add_links');
+    if (!empty($contentTypesToRemove)) {
+      foreach ($contentTypesToRemove as $type) {
+        unset($vars['content'][$type]);
+        unset($vars['types'][$type]);
+      }
+    }
   }
 }
 
