@@ -4,12 +4,39 @@ namespace Drupal\iqual\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\node\Entity\NodeType;
+use Drupal\Core\Entity\EntityTypeManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Custom iqual config.
  */
 class IqualSettingsForm extends ConfigFormBase {
+
+  /**
+   * The entity type manger service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManager
+   */
+  protected $entityTypeManager;
+
+  /**
+   * Constructs the form.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
+   *   The entity type manger service.
+   */
+  public function __construct(EntityTypeManager $entityTypeManager) {
+    $this->entityTypeManager = $entityTypeManager;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -65,7 +92,7 @@ class IqualSettingsForm extends ConfigFormBase {
     ];
 
     // Define which content types should be shown/hidden on the node/add page.
-    $nodeTypes = NodeType::loadMultiple();
+    $nodeTypes = $this->entityTypeManager->getStorage('node_type')->loadMultiple();
     $options = [];
     foreach ($nodeTypes as $nodeType) {
       $options[$nodeType->id()] = $nodeType->label();
