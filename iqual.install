@@ -8,7 +8,6 @@ use Drupal\user\Entity\Role;
 use Drupal\pagedesigner\Entity\Element;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Field\Entity\BaseFieldOverride;
-use Drush\Drush;
 
 /**
  * @file
@@ -107,7 +106,7 @@ function iqual_update_8001() {
  */
 function iqual_update_8002() {
   $patchFile = 'composer.patches.json';
-  $modulePath = drupal_get_path('module', 'iqual');
+  $modulePath = \Drupal::service('extension.list.module')->getPath('iqual');
 
   // Store current directory and switch to /var/www.
   $currentDirectory = getcwd();
@@ -126,7 +125,7 @@ function iqual_update_8002() {
 
   // Add patch to composer.patches.json.
   if (file_exists('/var/www/' . $patchFile)) {
-    $currentJson = json_decode(file_get_contents('/var/www/' . $patchFile), TRUE);
+    $currentJson = json_decode(file_get_contents('/var/www/' . $patchFile), TRUE, 512, JSON_THROW_ON_ERROR);
     $currentJson['patches']['drupal/redirect'] = ["Keep path on domain redirect" => "/var/www/patches/20200512_redirect_domain_keep_path.patch"];
     file_put_contents('/var/www/' . $patchFile, json_encode($currentJson, JSON_UNESCAPED_SLASHES));
   }

@@ -78,7 +78,7 @@ class IqualSettingsForm extends ConfigFormBase {
       '#type' => 'checkboxes',
       '#title' => $this->t('Hide Links ond node/add page'),
       '#options' => $options,
-      '#default_value' => $config->get('hide_node_add_links') ? $config->get('hide_node_add_links') : [],
+      '#default_value' => $config->get('hide_node_add_links') ?: [],
     ];
 
     return $form;

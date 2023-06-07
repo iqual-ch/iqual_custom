@@ -2,11 +2,11 @@
 
 namespace Drupal\iqual\EventSubscriber;
 
+use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
@@ -18,12 +18,12 @@ class UntranslatedEntitySubscriber implements EventSubscriberInterface {
   /**
    * Return 404 for non-existing translations.
    *
-   * @param \Symfony\Component\HttpKernel\Event\GetResponseEvent $event
+   * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *
    * @throws Drupal\iqual\EventSubscriber\NotFoundHttpException
    *   Thrown when #used_fields is malformed.
    */
-  public function onKernelRequestCheckTranslationExists(GetResponseEvent $event) {
+  public function onKernelRequestCheckTranslationExists(RequestEvent $event) {
     if ($event->getRequestType() === HttpKernelInterface::MASTER_REQUEST) {
       $node = \Drupal::routeMatch()->getParameter('node');
       if ($node instanceof NodeInterface) {
@@ -42,6 +42,7 @@ class UntranslatedEntitySubscriber implements EventSubscriberInterface {
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
+    $events = [];
     $events[KernelEvents::REQUEST][] = ['onKernelRequestCheckTranslationExists'];
     return $events;
   }

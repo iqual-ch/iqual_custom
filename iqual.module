@@ -5,6 +5,7 @@
  * Contains iqual.module.
  */
 
+use Drupal\iqual\Form\LanguageEditForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\language\Entity\ConfigurableLanguage;
 
@@ -49,8 +50,8 @@ function iqual_preprocess_node_add_list(&$vars) {
 function iqual_entity_type_alter(&$entity_types) {
   if (isset($entity_types['configurable_language'])) {
     $formHandlerClasses = $entity_types['configurable_language']->getHandlerClasses()['form'];
-    $formHandlerClasses['default'] = 'Drupal\iqual\Form\LanguageEditForm';
-    $formHandlerClasses['edit'] = 'Drupal\iqual\Form\LanguageEditForm';
+    $formHandlerClasses['default'] = LanguageEditForm::class;
+    $formHandlerClasses['edit'] = LanguageEditForm::class;
     $entity_types['configurable_language']->setHandlerClass('form', $formHandlerClasses);
   }
 }
