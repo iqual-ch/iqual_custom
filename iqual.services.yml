@@ -5,7 +5,6 @@ services:
       - { name: http_middleware}
   iqual.untranslated_entity_subscriber:
     class: Drupal\iqual\EventSubscriber\UntranslatedEntitySubscriber
-    arguments: []
+    arguments: ['@current_route_match', '@router.admin_context', '@language_manager']
     tags:
       - {name: event_subscriber}
-

@@ -19,7 +19,7 @@ class LanguageEditForm extends LanguageEditFormBase {
       '#type' => 'textfield',
       '#title' => $this->t('Locale Code'),
       '#maxlength' => 10,
-      '#default_value' => $this->entity->getThirdPartySetting('iqual', 'locale') ? $this->entity->getThirdPartySetting('iqual', 'locale') : '',
+      '#default_value' => $this->entity->getThirdPartySetting('iqual', 'locale') ?: '',
     ];
   }
 
@@ -30,4 +30,5 @@ class LanguageEditForm extends LanguageEditFormBase {
     $this->entity->setThirdPartySetting('iqual', 'locale', $form_state->getValue('locale'));
     parent::save($form, $form_state);
   }
+
 }

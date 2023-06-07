@@ -2,18 +2,13 @@
 
 /**
  * @file
+ * Install, update and uninstall functions for the iqual module.
  */
 
 use Drupal\user\Entity\Role;
 use Drupal\pagedesigner\Entity\Element;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Field\Entity\BaseFieldOverride;
-use Drush\Drush;
-
-/**
- * @file
- * Install, update and uninstall functions for the iqual module.
- */
 
 /**
  * Apply changes to configuration / environment on installation.
@@ -107,7 +102,7 @@ function iqual_update_8001() {
  */
 function iqual_update_8002() {
   $patchFile = 'composer.patches.json';
-  $modulePath = drupal_get_path('module', 'iqual');
+  $modulePath = \Drupal::service('extension.list.module')->getPath('iqual');
 
   // Store current directory and switch to /var/www.
   $currentDirectory = getcwd();
@@ -126,7 +121,7 @@ function iqual_update_8002() {
 
   // Add patch to composer.patches.json.
   if (file_exists('/var/www/' . $patchFile)) {
-    $currentJson = json_decode(file_get_contents('/var/www/' . $patchFile), TRUE);
+    $currentJson = json_decode(file_get_contents('/var/www/' . $patchFile), TRUE, 512, JSON_THROW_ON_ERROR);
     $currentJson['patches']['drupal/redirect'] = ["Keep path on domain redirect" => "/var/www/patches/20200512_redirect_domain_keep_path.patch"];
     file_put_contents('/var/www/' . $patchFile, json_encode($currentJson, JSON_UNESCAPED_SLASHES));
   }
@@ -145,10 +140,10 @@ function iqual_update_8002() {
 function iqual_update_8003() {
 
   // Update configuration for container translations.
-  _iqual_update_8003_setContainerFieldOverride('entity');
-  _iqual_update_8003_setContainerFieldOverride('user_id');
-  _iqual_update_8003_setContainerFieldOverride('container');
-  _iqual_update_8003_setContainerFieldOverride('parent');
+  _iqual_update_8003_set_container_field_override('entity');
+  _iqual_update_8003_set_container_field_override('user_id');
+  _iqual_update_8003_set_container_field_override('container');
+  _iqual_update_8003_set_container_field_override('parent');
 
   // Make sure that container translations are correct.
   $eids = \Drupal::entityQuery('pagedesigner_element')->condition('type', 'container')->execute();
@@ -164,7 +159,7 @@ function iqual_update_8003() {
         $containerTranslation->user_id->target_id = $container->user_id->target_id;
         $containerTranslation->entity->target_id = $container->entity->target_id;
         $containerTranslation->save();
-        _iqual_update_8003_setEntity($containerTranslation, $container);
+        _iqual_update_8003_set_entity($containerTranslation, $container);
       }
     }
     $storage->resetCache([$container->id()]);
@@ -174,7 +169,7 @@ function iqual_update_8003() {
 /**
  * Create or adapt the base field override (translatable) on container fields.
  */
-function _iqual_update_8003_setContainerFieldOverride($fieldName) {
+function _iqual_update_8003_set_container_field_override($fieldName) {
   $override = BaseFieldOverride::loadByName('pagedesigner_element', 'container', $fieldName);
   if (empty($override)) {
     $fields = \Drupal::service('entity_field.manager')->getBaseFieldDefinitions('pagedesigner_element');
@@ -191,17 +186,17 @@ function _iqual_update_8003_setContainerFieldOverride($fieldName) {
 /**
  * Update the entity based on the container.
  */
-function _iqual_update_8003_setEntity(Element $element, $container) {
+function _iqual_update_8003_set_entity(Element $element, $container) {
   if ($element->entity->target_id != $container->entity->target_id) {
     $element->entity->target_id = $container->entity->target_id;
     $element->save();
   }
   foreach ($element->children as $item) {
-    _iqual_update_8003_setEntity($item->entity, $container);
+    _iqual_update_8003_set_entity($item->entity, $container);
   }
   if ($element->hasField('field_styles')) {
     foreach ($element->field_styles as $item) {
-      _iqual_update_8003_setEntity($item->entity, $container);
+      _iqual_update_8003_set_entity($item->entity, $container);
     }
   }
   \Drupal::entityTypeManager()->getStorage('pagedesigner_element')->resetCache([$element->id()]);
