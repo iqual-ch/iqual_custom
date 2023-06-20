@@ -5,10 +5,10 @@
  * Install, update and uninstall functions for the iqual module.
  */
 
-use Drupal\user\Entity\Role;
-use Drupal\pagedesigner\Entity\Element;
-use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Field\Entity\BaseFieldOverride;
+use Drupal\Core\Language\LanguageInterface;
+use Drupal\pagedesigner\Entity\Element;
+use Drupal\user\Entity\Role;
 
 /**
  * Apply changes to configuration / environment on installation.
@@ -200,4 +200,15 @@ function _iqual_update_8003_set_entity(Element $element, $container) {
     }
   }
   \Drupal::entityTypeManager()->getStorage('pagedesigner_element')->resetCache([$element->id()]);
+}
+
+/**
+ * Remove path_alias entitites where alias is NULL.
+ */
+function iqual_update_9000(&$sandbox) {
+  $storageManager = \Drupal::entityTypeManager()->getStorage('path_alias');
+  $query = $storageManager->getQuery();
+  $results = $query->condition('alias', NULL, 'IS')->execute();
+  $entities = $results ? $storageManager->loadMultiple($results) : [];
+  $storageManager->delete($entities);
 }
