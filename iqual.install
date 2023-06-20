@@ -5,10 +5,10 @@
  * Install, update and uninstall functions for the iqual module.
  */
 
-use Drupal\user\Entity\Role;
-use Drupal\pagedesigner\Entity\Element;
-use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Field\Entity\BaseFieldOverride;
+use Drupal\Core\Language\LanguageInterface;
+use Drupal\pagedesigner\Entity\Element;
+use Drupal\user\Entity\Role;
 
 /**
  * Apply changes to configuration / environment on installation.
@@ -200,4 +200,24 @@ function _iqual_update_8003_set_entity(Element $element, $container) {
     }
   }
   \Drupal::entityTypeManager()->getStorage('pagedesigner_element')->resetCache([$element->id()]);
+}
+
+/**
+ * Set loading screen text of pagedesigner.
+ */
+function _iqual_update_9001(&$sandbox) {
+  $storage = \Drupal::entityTypeManager()->getStorage('filter_format');
+  $textformat = $storage->load('iqual');
+  if (empty($textformat)) {
+    $textformat = $storage->load('pagedesigner');
+  }
+  $config = \Drupal::configFactory()->getEditable('pagedesigner.settings');
+
+  if (empty($config->get('loading_screen')) && empty($config->get('loading_screen')['value'])) {
+    $config->set('loading_screen',
+     [
+       "value" => "<p>Pagedesigner lädt</p>",
+       "format" => $textformat->id(),
+     ])->save();
+  }
 }
