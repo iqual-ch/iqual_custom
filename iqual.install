@@ -205,7 +205,7 @@ function _iqual_update_8003_set_entity(Element $element, $container) {
 /**
  * Set loading screen text of pagedesigner.
  */
-function _iqual_update_9001(&$sandbox) {
+function iqual_update_9001(&$sandbox) {
   $storage = \Drupal::entityTypeManager()->getStorage('filter_format');
   $textformat = $storage->load('iqual');
   if (empty($textformat)) {
