@@ -236,34 +236,13 @@ function iqual_update_9001(&$sandbox) {
 /**
  * Hide all cookieconsent blocks in pagedesigner.
  */
-function iqual_update_9002(&$sandbox) {
+function iqual_update_9003(&$sandbox) {
   $blocks = \Drupal::entityTypeManager()->getStorage('block')->loadMultiple();
   /** @var \Drupal\block\Entity\Block $block */
   foreach ($blocks as $block) {
     if (strpos('cookieconsent', $block->get('id')) !== FALSE
-      || strpos($block->label(), 'Cookie-Consent') !== FALSE) {
-      echo $block->label();
-      $block->setVisibilityConfig(
-      'pagedesigner_condition',
-      [
-        'id' => 'pagedesigner_condition',
-        'pagedesigner_condition' => TRUE,
-        'negate' => NULL,
-        'context_mapping' => [],
-      ]
-      );
-      $block->save();
-    }
-  }
-}
-/**
- * Hide all cookiebanner blocks in pagedesigner.
- */
-function iqual_update_9002(&$sandbox) {
-  $blocks = \Drupal::entityTypeManager()->getStorage('block')->loadMultiple();
-  /** @var \Drupal\block\Entity\Block $block */
-  foreach ($blocks as $block) {
-    if (strpos('cookiebanner', $block->get('id')) !== FALSE
+      || strpos($block->label(), 'Cookie-Consent') !== FALSE
+      || strpos('cookiebanner', $block->get('id')) !== FALSE
       || strpos($block->label(), 'Cookiebanner') !== FALSE) {
       echo $block->label();
       $block->setVisibilityConfig(
@@ -279,4 +258,3 @@ function iqual_update_9002(&$sandbox) {
     }
   }
 }
-cookiebanner
