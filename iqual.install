@@ -203,6 +203,17 @@ function _iqual_update_8003_set_entity(Element $element, $container) {
 }
 
 /**
+ * Remove path_alias entitites where alias is NULL.
+ */
+function iqual_update_9000(&$sandbox) {
+  $storageManager = \Drupal::entityTypeManager()->getStorage('path_alias');
+  $query = $storageManager->getQuery();
+  $results = $query->condition('alias', NULL, 'IS')->execute();
+  $entities = $results ? $storageManager->loadMultiple($results) : [];
+  $storageManager->delete($entities);
+}
+
+/**
  * Set loading screen text of pagedesigner.
  */
 function iqual_update_9001(&$sandbox) {
