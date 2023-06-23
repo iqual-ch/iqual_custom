@@ -214,9 +214,29 @@ function iqual_update_9000(&$sandbox) {
 }
 
 /**
+ * Set loading screen text of pagedesigner.
+ */
+function iqual_update_9001(&$sandbox) {
+  $storage = \Drupal::entityTypeManager()->getStorage('filter_format');
+  $textformat = $storage->load('iqual');
+  if (empty($textformat)) {
+    $textformat = $storage->load('pagedesigner');
+  }
+  $config = \Drupal::configFactory()->getEditable('pagedesigner.settings');
+
+  if (empty($config->get('loading_screen')) && empty($config->get('loading_screen')['value'])) {
+    $config->set('loading_screen',
+     [
+       "value" => "<p>Pagedesigner lädt</p>",
+       "format" => $textformat->id(),
+     ])->save();
+  }
+}
+
+/**
  * Hide all cookieconsent blocks in pagedesigner.
  */
-function iqual_update_9005(&$sandbox) {
+function iqual_update_9002(&$sandbox) {
   $blocks = \Drupal::entityTypeManager()->getStorage('block')->loadMultiple();
   /** @var \Drupal\block\Entity\Block $block */
   foreach ($blocks as $block) {
