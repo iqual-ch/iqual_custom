@@ -258,3 +258,13 @@ function iqual_update_9003(&$sandbox) {
     }
   }
 }
+
+/**
+ * Install exif_orientation module.
+ */
+function iqual_update_9004(&$sandbox) {
+  $moduleList = \Drupal::service('extension.list.module');
+  if ($moduleList->exists('exif_orientation')) {
+    \Drupal::service('module_installer')->install(['exif_orientation']);
+  }
+}
