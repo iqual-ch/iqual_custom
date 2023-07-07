@@ -1,4 +1,4 @@
-name: 'iqual'
+name: "iqual"
 type: module
-description: 'iqual custom additions'
-core_version_requirement: ^8.8 || ^9
+description: "iqual custom additions"
+core_version_requirement: ^9.5 || ^10
