@@ -2,10 +2,9 @@
 
 namespace Drupal\iqual\Middleware;
 
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Middleware to properly redirect from hooks.
@@ -38,7 +37,7 @@ class Redirect implements HttpKernelInterface {
   /**
    * {@inheritDoc}
    */
-  public function handle(Request $request, $type = self::MASTER_REQUEST, $catch = TRUE) : Response {
+  public function handle(Request $request, $type = self::MASTER_REQUEST, $catch = TRUE) {
     $response = $this->httpKernel->handle($request, $type, $catch);
     return $this->redirectResponse ?: $response;
   }

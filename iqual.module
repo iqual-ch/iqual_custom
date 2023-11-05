@@ -75,7 +75,7 @@ function iqual_page_attachments_alter(array &$attachments) {
     }
 
     foreach ($attachments['#attached']['html_head'] as $index => $attachment) {
-      if (str_starts_with((string) $attachment[1], 'hreflang_per_language')) {
+      if (substr($attachment[1], 0, 21) == 'hreflang_per_language') {
         $languageLocaleCode = iqual_get_locale_from_langcode($attachment[0]['#attributes']['hreflang']);
         if ($languageLocaleCode) {
           $attachments['#attached']['html_head'][$index][0]['#attributes']['hreflang'] = $languageLocaleCode;
