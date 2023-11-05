@@ -94,8 +94,10 @@ class IqualSettingsForm extends ConfigFormBase {
     // Define which content types should be shown/hidden on the node/add page.
     $nodeTypes = $this->entityTypeManager->getStorage('node_type')->loadMultiple();
     $options = [];
+    if (count($nodeTypes) > 0) {
     foreach ($nodeTypes as $nodeType) {
       $options[$nodeType->id()] = $nodeType->label();
+      }
     }
     $form['ux'] = [
       '#type'  => 'fieldset',
@@ -103,7 +105,7 @@ class IqualSettingsForm extends ConfigFormBase {
     ];
     $form['ux']['hide_node_add_links'] = [
       '#type' => 'checkboxes',
-      '#title' => $this->t('Hide Links ond node/add page'),
+      '#title' => $this->t('Hide Links on node/add page'),
       '#options' => $options,
       '#default_value' => $config->get('hide_node_add_links') ?: [],
     ];
