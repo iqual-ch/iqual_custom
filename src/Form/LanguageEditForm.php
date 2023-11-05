@@ -2,8 +2,8 @@
 
 namespace Drupal\iqual\Form;
 
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\language\Form\LanguageEditForm as LanguageEditFormBase;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Override LanguageEditForm by adding new locale field to form.
