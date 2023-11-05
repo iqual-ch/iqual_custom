@@ -240,10 +240,10 @@ function iqual_update_9003(&$sandbox) {
   $blocks = \Drupal::entityTypeManager()->getStorage('block')->loadMultiple();
   /** @var \Drupal\block\Entity\Block $block */
   foreach ($blocks as $block) {
-    if (strpos('cookieconsent', $block->get('id')) !== FALSE
-      || strpos($block->label(), 'Cookie-Consent') !== FALSE
-      || strpos('cookiebanner', $block->get('id')) !== FALSE
-      || strpos($block->label(), 'Cookiebanner') !== FALSE) {
+    if (str_contains('cookieconsent', (string) $block->get('id'))
+      || str_contains($block->label(), 'Cookie-Consent')
+      || str_contains('cookiebanner', (string) $block->get('id'))
+      || str_contains($block->label(), 'Cookiebanner')) {
       echo $block->label();
       $block->setVisibilityConfig(
       'pagedesigner_condition',
