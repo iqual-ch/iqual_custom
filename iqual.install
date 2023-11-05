@@ -240,10 +240,10 @@ function iqual_update_9003(&$sandbox) {
   $blocks = \Drupal::entityTypeManager()->getStorage('block')->loadMultiple();
   /** @var \Drupal\block\Entity\Block $block */
   foreach ($blocks as $block) {
-    if (strpos('cookieconsent', $block->get('id')) !== FALSE
-      || strpos($block->label(), 'Cookie-Consent') !== FALSE
-      || strpos('cookiebanner', $block->get('id')) !== FALSE
-      || strpos($block->label(), 'Cookiebanner') !== FALSE) {
+    if (str_contains('cookieconsent', (string) $block->get('id'))
+      || str_contains($block->label(), 'Cookie-Consent')
+      || str_contains('cookiebanner', (string) $block->get('id'))
+      || str_contains($block->label(), 'Cookiebanner')) {
       echo $block->label();
       $block->setVisibilityConfig(
       'pagedesigner_condition',
@@ -266,5 +266,29 @@ function iqual_update_9004(&$sandbox) {
   $moduleList = \Drupal::service('extension.list.module');
   if ($moduleList->exists('exif_orientation')) {
     \Drupal::service('module_installer')->install(['exif_orientation']);
+  }
+}
+
+/**
+ * Enable linkit on html editors used in pagedesigner.
+ */
+function iqual_update_9005(&$sandbox) {
+  /** @var \Drupal\Core\Extension\ModuleHandler $module_handler  */
+  $module_handler = \Drupal::service('module_handler');
+  if ($module_handler->moduleExists('pagedesigner') && $module_handler->moduleExists('linkit')) {
+
+    // Load html filter formats from pagedesigner.
+    $pagedesigner_settings = \Drupal::config('pagedesigner.settings');
+    $format_ids = array_unique([$pagedesigner_settings->get('filter_format'), $pagedesigner_settings->get('filter_format_textarea')]);
+    /** @var \Drupal\filter\Entity\FilterFormat[] $formats */
+    $formats = \Drupal::entityTypeManager()->getStorage('filter_format')->loadMultiple($format_ids);
+
+    // Enable linkit filter.
+    foreach ($formats as $format) {
+      $format->setFilterConfig('linkit',
+      ['status' => TRUE, 'weight' => 0, 'settings' => ['title' => TRUE]]
+      );
+      $format->save();
+    }
   }
 }
