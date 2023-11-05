@@ -151,6 +151,7 @@ function iqual_update_8003() {
   $storage = \Drupal::entityTypeManager()->getStorage('pagedesigner_element');
   // Update all children.
   foreach ($eids as $eid) {
+    /** @var \Drupal\pagedesigner\Entity\Element $container */
     $container = $storage->load($eid);
     $languages = \Drupal::service('language_manager')->getLanguages(LanguageInterface::STATE_ALL);
     foreach ($languages as $language) {
@@ -240,10 +241,10 @@ function iqual_update_9003(&$sandbox) {
   $blocks = \Drupal::entityTypeManager()->getStorage('block')->loadMultiple();
   /** @var \Drupal\block\Entity\Block $block */
   foreach ($blocks as $block) {
-    if (strpos('cookieconsent', $block->get('id')) !== FALSE
-      || strpos($block->label(), 'Cookie-Consent') !== FALSE
-      || strpos('cookiebanner', $block->get('id')) !== FALSE
-      || strpos($block->label(), 'Cookiebanner') !== FALSE) {
+    if (str_contains('cookieconsent', (string) $block->get('id'))
+      || str_contains($block->label(), 'Cookie-Consent')
+      || str_contains('cookiebanner', (string) $block->get('id'))
+      || str_contains($block->label(), 'Cookiebanner')) {
       echo $block->label();
       $block->setVisibilityConfig(
       'pagedesigner_condition',
@@ -279,7 +280,12 @@ function iqual_update_9005(&$sandbox) {
 
     // Load html filter formats from pagedesigner.
     $pagedesigner_settings = \Drupal::config('pagedesigner.settings');
-    $format_ids = array_unique([$pagedesigner_settings->get('filter_format'), $pagedesigner_settings->get('filter_format_textarea')]);
+    $format_ids = array_unique(
+      [
+        $pagedesigner_settings->get('filter_format'),
+        $pagedesigner_settings->get('filter_format_textarea'),
+      ]
+    );
     /** @var \Drupal\filter\Entity\FilterFormat[] $formats */
     $formats = \Drupal::entityTypeManager()->getStorage('filter_format')->loadMultiple($format_ids);
 

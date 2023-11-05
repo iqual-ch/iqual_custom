@@ -94,8 +94,10 @@ class IqualSettingsForm extends ConfigFormBase {
     // Define which content types should be shown/hidden on the node/add page.
     $nodeTypes = $this->entityTypeManager->getStorage('node_type')->loadMultiple();
     $options = [];
-    foreach ($nodeTypes as $nodeType) {
-      $options[$nodeType->id()] = $nodeType->label();
+    if (count($nodeTypes) > 0) {
+      foreach ($nodeTypes as $nodeType) {
+        $options[$nodeType->id()] = $nodeType->label();
+      }
     }
     $form['ux'] = [
       '#type'  => 'fieldset',
@@ -103,7 +105,7 @@ class IqualSettingsForm extends ConfigFormBase {
     ];
     $form['ux']['hide_node_add_links'] = [
       '#type' => 'checkboxes',
-      '#title' => $this->t('Hide Links ond node/add page'),
+      '#title' => $this->t('Hide Links on node/add page'),
       '#options' => $options,
       '#default_value' => $config->get('hide_node_add_links') ?: [],
     ];
@@ -132,7 +134,12 @@ class IqualSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    if ((is_countable($values = $form_state->getValue('hide_node_add_links')) ? count($values = $form_state->getValue('hide_node_add_links')) : 0) > 0) {
+      $nodeTypes = $this->entityTypeManager->getStorage('node_type')->loadMultiple();
+      if (array_values($values) == array_keys($nodeTypes)) {
+        $this->messenger()->addWarning($this->t('All node types are excluded from node/add page'));
+      }
+    }
   }
 
   /**
