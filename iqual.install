@@ -2,18 +2,13 @@
 
 /**
  * @file
- */
-
-use Drupal\user\Entity\Role;
-use Drupal\pagedesigner\Entity\Element;
-use Drupal\Core\Language\LanguageInterface;
-use Drupal\Core\Field\Entity\BaseFieldOverride;
-use Drush\Drush;
-
-/**
- * @file
  * Install, update and uninstall functions for the iqual module.
  */
+
+use Drupal\Core\Field\Entity\BaseFieldOverride;
+use Drupal\Core\Language\LanguageInterface;
+use Drupal\pagedesigner\Entity\Element;
+use Drupal\user\Entity\Role;
 
 /**
  * Apply changes to configuration / environment on installation.
@@ -107,7 +102,7 @@ function iqual_update_8001() {
  */
 function iqual_update_8002() {
   $patchFile = 'composer.patches.json';
-  $modulePath = drupal_get_path('module', 'iqual');
+  $modulePath = \Drupal::service('extension.list.module')->getPath('iqual');
 
   // Store current directory and switch to /var/www.
   $currentDirectory = getcwd();
@@ -126,7 +121,7 @@ function iqual_update_8002() {
 
   // Add patch to composer.patches.json.
   if (file_exists('/var/www/' . $patchFile)) {
-    $currentJson = json_decode(file_get_contents('/var/www/' . $patchFile), TRUE);
+    $currentJson = json_decode(file_get_contents('/var/www/' . $patchFile), TRUE, 512, JSON_THROW_ON_ERROR);
     $currentJson['patches']['drupal/redirect'] = ["Keep path on domain redirect" => "/var/www/patches/20200512_redirect_domain_keep_path.patch"];
     file_put_contents('/var/www/' . $patchFile, json_encode($currentJson, JSON_UNESCAPED_SLASHES));
   }
@@ -145,17 +140,18 @@ function iqual_update_8002() {
 function iqual_update_8003() {
 
   // Update configuration for container translations.
-  _iqual_update_8003_setContainerFieldOverride('entity');
-  _iqual_update_8003_setContainerFieldOverride('user_id');
-  _iqual_update_8003_setContainerFieldOverride('container');
-  _iqual_update_8003_setContainerFieldOverride('parent');
+  _iqual_update_8003_set_container_field_override('entity');
+  _iqual_update_8003_set_container_field_override('user_id');
+  _iqual_update_8003_set_container_field_override('container');
+  _iqual_update_8003_set_container_field_override('parent');
 
   // Make sure that container translations are correct.
   $eids = \Drupal::entityQuery('pagedesigner_element')->condition('type', 'container')->execute();
 
+  $storage = \Drupal::entityTypeManager()->getStorage('pagedesigner_element');
   // Update all children.
   foreach ($eids as $eid) {
-    $container = Element::load($eid);
+    $container = $storage->load($eid);
     $languages = \Drupal::service('language_manager')->getLanguages(LanguageInterface::STATE_ALL);
     foreach ($languages as $language) {
       if ($container->hasTranslation($language->getId())) {
@@ -163,16 +159,17 @@ function iqual_update_8003() {
         $containerTranslation->user_id->target_id = $container->user_id->target_id;
         $containerTranslation->entity->target_id = $container->entity->target_id;
         $containerTranslation->save();
-        _iqual_update_8003_setEntity($containerTranslation, $container);
+        _iqual_update_8003_set_entity($containerTranslation, $container);
       }
     }
+    $storage->resetCache([$container->id()]);
   }
 }
 
 /**
  * Create or adapt the base field override (translatable) on container fields.
  */
-function _iqual_update_8003_setContainerFieldOverride($fieldName) {
+function _iqual_update_8003_set_container_field_override($fieldName) {
   $override = BaseFieldOverride::loadByName('pagedesigner_element', 'container', $fieldName);
   if (empty($override)) {
     $fields = \Drupal::service('entity_field.manager')->getBaseFieldDefinitions('pagedesigner_element');
@@ -189,32 +186,85 @@ function _iqual_update_8003_setContainerFieldOverride($fieldName) {
 /**
  * Update the entity based on the container.
  */
-function _iqual_update_8003_setEntity(Element $element, $container) {
+function _iqual_update_8003_set_entity(Element $element, $container) {
   if ($element->entity->target_id != $container->entity->target_id) {
     $element->entity->target_id = $container->entity->target_id;
     $element->save();
   }
   foreach ($element->children as $item) {
-    _iqual_update_8003_setEntity($item->entity, $container);
+    _iqual_update_8003_set_entity($item->entity, $container);
   }
   if ($element->hasField('field_styles')) {
     foreach ($element->field_styles as $item) {
-      _iqual_update_8003_setEntity($item->entity, $container);
+      _iqual_update_8003_set_entity($item->entity, $container);
+    }
+  }
+  \Drupal::entityTypeManager()->getStorage('pagedesigner_element')->resetCache([$element->id()]);
+}
+
+/**
+ * Remove path_alias entitites where alias is NULL.
+ */
+function iqual_update_9000(&$sandbox) {
+  $storageManager = \Drupal::entityTypeManager()->getStorage('path_alias');
+  $query = $storageManager->getQuery();
+  $results = $query->condition('alias', NULL, 'IS')->execute();
+  $entities = $results ? $storageManager->loadMultiple($results) : [];
+  $storageManager->delete($entities);
+}
+
+/**
+ * Set loading screen text of pagedesigner.
+ */
+function iqual_update_9001(&$sandbox) {
+  $storage = \Drupal::entityTypeManager()->getStorage('filter_format');
+  $textformat = $storage->load('iqual');
+  if (empty($textformat)) {
+    $textformat = $storage->load('pagedesigner');
+  }
+  $config = \Drupal::configFactory()->getEditable('pagedesigner.settings');
+
+  if (empty($config->get('loading_screen')) && empty($config->get('loading_screen')['value'])) {
+    $config->set('loading_screen',
+     [
+       "value" => "<p>Pagedesigner lädt</p>",
+       "format" => $textformat->id(),
+     ])->save();
+  }
+}
+
+/**
+ * Hide all cookieconsent blocks in pagedesigner.
+ */
+function iqual_update_9003(&$sandbox) {
+  $blocks = \Drupal::entityTypeManager()->getStorage('block')->loadMultiple();
+  /** @var \Drupal\block\Entity\Block $block */
+  foreach ($blocks as $block) {
+    if (strpos('cookieconsent', $block->get('id')) !== FALSE
+      || strpos($block->label(), 'Cookie-Consent') !== FALSE
+      || strpos('cookiebanner', $block->get('id')) !== FALSE
+      || strpos($block->label(), 'Cookiebanner') !== FALSE) {
+      echo $block->label();
+      $block->setVisibilityConfig(
+      'pagedesigner_condition',
+      [
+        'id' => 'pagedesigner_condition',
+        'pagedesigner_condition' => TRUE,
+        'negate' => NULL,
+        'context_mapping' => [],
+      ]
+      );
+      $block->save();
     }
   }
 }
 
 /**
- * Run pagedesigner debug module corrections.
+ * Install exif_orientation module.
  */
-function iqual_update_8004() {
+function iqual_update_9004(&$sandbox) {
   $moduleList = \Drupal::service('extension.list.module');
-  if ($moduleList->exists('pagedesigner_debug')) {
-    \Drupal::service('module_installer')->install(['pagedesigner_debug']);
-    $process = Drush::processManager()->drush(Drush::service('site.alias.manager')->getSelf(), 'pd_debug:correct', ['-y']);
-    $process->run();
-    if (!empty($process->getErrorOutput())) {
-      echo $process->getErrorOutput();
-    }
+  if ($moduleList->exists('exif_orientation')) {
+    \Drupal::service('module_installer')->install(['exif_orientation']);
   }
 }

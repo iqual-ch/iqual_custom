@@ -1,5 +1,8 @@
 {
   "name": "iqual/iqual_custom",
   "description": "A module for adding iqual additions.",
-  "type": "drupal-custom-module"
+  "type": "drupal-custom-module",
+  "require": {
+    "drupal/exif_orientation": "^1.2"
+  }
 }
