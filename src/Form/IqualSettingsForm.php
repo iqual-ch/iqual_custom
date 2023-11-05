@@ -124,7 +124,12 @@ class IqualSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
-
+    if (count($values = $form_state->getValue('hide_node_add_links')) > 0) {
+      $nodeTypes = $this->entityTypeManager->getStorage('node_type')->loadMultiple();
+      if (array_values($values) == array_keys($nodeTypes)) {
+        $this->messenger()->addWarning($this->t('All node types are excluded from node/add page'));
+      }
+    }
   }
 
   /**
