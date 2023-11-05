@@ -2,9 +2,9 @@
 
 namespace Drupal\iqual\Form;
 
+use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Entity\EntityTypeManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -108,6 +108,16 @@ class IqualSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('hide_node_add_links') ?: [],
     ];
 
+    // Add entity status code options.
+    $form['entity_status_code'] = [
+      '#type'  => 'fieldset',
+      '#title' => $this->t('Return codes on inaccessible nodes or translations.'),
+    ];
+    $form['entity_status_code']['entity_unpublished_404'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Return a 404 (instead of 403) on unpublished nodes and missing translations.'),
+      '#default_value' => $config->get('entity_unpublished_404') ?: FALSE,
+    ];
     return $form;
   }
 
@@ -133,6 +143,7 @@ class IqualSettingsForm extends ConfigFormBase {
     $config = $this->config('iqual.settings');
     $config->set('hide_title_slug', $form_state->getValue('hide_title_slug'));
     $config->set('hide_node_add_links', $form_state->getValue('hide_node_add_links'));
+    $config->set('entity_unpublished_404', $form_state->getValue('entity_unpublished_404'));
     $config->save();
   }
 
