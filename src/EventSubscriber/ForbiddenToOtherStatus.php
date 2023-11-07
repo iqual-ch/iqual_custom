@@ -13,23 +13,23 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
- * Converts 403 entity page error responses to 404 page.
+ * Converts 403 entity page error responses to another status code.
  */
-class ForbiddenToNotFound extends HttpExceptionSubscriberBase {
+class ForbiddenToOtherStatus extends HttpExceptionSubscriberBase {
 
   /**
-   * Configuration for iqual settings.
+   * The status code to return (defaults to 403).
    *
-   * @var \Drupal\Core\Config\Config
+   * @var int
    */
-  protected $config = NULL;
+  protected $statusCode = 403;
 
   /**
-   * Constructs a NotFound object.
+   * Constructs a ForbiddenToOtherStatus object.
    *
    * @param \Drupal\Core\Session\AccountProxyInterface $account
    *   The current user.
@@ -49,7 +49,8 @@ class ForbiddenToNotFound extends HttpExceptionSubscriberBase {
     protected RouteMatchInterface $routeMatch,
     ConfigFactoryInterface $config_factory
     ) {
-    $this->config = $config_factory->get('iqual.settings');
+    $this->statusCode = $config_factory->get('iqual.settings')
+      ->get('entity_unpublished_status');
   }
 
   /**
@@ -96,14 +97,14 @@ class ForbiddenToNotFound extends HttpExceptionSubscriberBase {
   public function on403(ExceptionEvent $event) {
     if ($this->shouldApply()) {
       $entity = $this->getEntity();
-      if ($this->send404($entity)) {
-        $event->setThrowable(new NotFoundHttpException());
+      if ($this->statusRequired($entity)) {
+        $event->setThrowable(new HttpException($this->statusCode));
       }
     }
   }
 
   /**
-   * Return 404 for non-existing translations.
+   * Return a status code for untranslated entites or non-existing translations.
    *
    * @param \Symfony\Component\HttpKernel\Event\RequestEvent $event
    *   The event.
@@ -118,29 +119,28 @@ class ForbiddenToNotFound extends HttpExceptionSubscriberBase {
     }
     if ($this->shouldApply()) {
       $entity = $this->getEntity();
-      if ($this->send404($entity)) {
-        throw new NotFoundHttpException();
+      if ($this->statusRequired($entity)) {
+        throw new HttpException($this->statusCode);
       }
     }
   }
 
   /**
-   * Check if an entity should return a 404.
+   * Check if an entity should return the status code.
    *
    * @param \Drupal\Core\Entity\EntityPublishedInterface $entity
    *   The entity being accessed.
    *
    * @return bool
-   *   True when a 404 should be returned, false otherwise.
+   *   True when the status code should be returned, false otherwise.
    */
-  public function send404(EntityPublishedInterface $entity = NULL) {
+  public function statusRequired(EntityPublishedInterface $entity = NULL) {
     if (!$entity) {
       return FALSE;
     }
     if ($entity instanceof ContentEntityInterface) {
-      // Check whether we are on a node route.
-      $language = $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT);
       // Get the entity in the current language.
+      $language = $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT);
       if ($entity->hasTranslation($language->getId())) {
         $entity = $entity->getTranslation($language->getId());
         if (!$entity->isPublished()) {
@@ -148,6 +148,7 @@ class ForbiddenToNotFound extends HttpExceptionSubscriberBase {
         }
       }
       else {
+        // If the entity doesn't have a translation, return status code.
         return TRUE;
       }
     }
@@ -159,14 +160,14 @@ class ForbiddenToNotFound extends HttpExceptionSubscriberBase {
   }
 
   /**
-   * Check whether the 404 check should apply.
+   * Check whether a special status should be sent..
    *
    * @return bool
-   *   True if 404 check should be applied, false otherwise.
+   *   True if status code should be applied, false otherwise.
    */
   public function shouldApply() : bool {
-    // Check if 404 response is enabled.
-    if (!$this->config->get('entity_unpublished_404')) {
+    // Check if status code response is enabled.
+    if ($this->statusCode == 403) {
       return FALSE;
     }
     // Only apply to anonymous user.

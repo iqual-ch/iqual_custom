@@ -3,8 +3,8 @@ services:
     class: Drupal\iqual\Middleware\Redirect
     tags:
       - { name: http_middleware}
-  iqual.forbidden_to_not_found:
-    class: Drupal\iqual\EventSubscriber\ForbiddenToNotFound
+  iqual.forbidden_to_other_status:
+    class: Drupal\iqual\EventSubscriber\ForbiddenToOtherStatus
     arguments: ['@current_user', '@language_manager', '@entity_type.manager', '@current_route_match', '@config.factory']
     tags:
       - { name: event_subscriber }
