@@ -298,3 +298,12 @@ function iqual_update_9005(&$sandbox) {
     }
   }
 }
+
+/**
+ * Set the default return code for new unpublished nodes status setting.
+ */
+function iqual_update_9006(&$sandbox) {
+  \Drupal::configFactory()->getEditable('iqual.settings')
+    ->set('entity_unpublished_status', 403)
+    ->save();
+}
