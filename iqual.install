@@ -302,7 +302,7 @@ function iqual_update_9005(&$sandbox) {
 /**
  * Set claro as backend theme.
  */
-function iqual_update_9006(&$sandbox) {
+function iqual_update_10000(&$sandbox) {
   /** @var \Drupal\Core\Config\Config $config */
   $config = \Drupal::service('config.factory')->getEditable('system.theme');
   if ($config->get('admin') == 'adminimal_theme') {
