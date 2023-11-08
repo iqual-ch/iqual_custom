@@ -298,3 +298,22 @@ function iqual_update_9005(&$sandbox) {
     }
   }
 }
+
+/**
+ * Set claro as backend theme.
+ */
+function iqual_update_10000(&$sandbox) {
+  /** @var \Drupal\Core\Config\Config $config */
+  $config = \Drupal::service('config.factory')->getEditable('system.theme');
+  if ($config->get('admin') == 'adminimal_theme') {
+    // Make sure the theme is installed.
+    /** @var \Drupal\Core\Extension\ThemeInstallerInterface $theme_installer */
+    $theme_installer = \Drupal::service('theme_installer');
+    $theme_installer->install(['claro']);
+
+    // Set it as the admin theme.
+    $config->set('admin', 'claro')->save();
+
+    $theme_installer->uninstall(['seven', 'adminimal_theme']);
+  }
+}
