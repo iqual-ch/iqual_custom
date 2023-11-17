@@ -127,7 +127,7 @@ class IqualSettingsForm extends ConfigFormBase {
     ];
     $form['ux']['entity_unpublished_status'] = [
       '#type' => 'select',
-      '#title' => $this->t('Set the status code on unpublished nodes and missing translations (defaults to 403).'),
+      '#title' => $this->t('Set the status code on unpublished entities and missing translations (defaults to 403).'),
       '#options' => $this->statusCodes,
       '#default_value' => $config->get('entity_unpublished_status') ?: FALSE,
       "#description" => $this->t('Changing this value may require a cache rebuild to apply.'),
