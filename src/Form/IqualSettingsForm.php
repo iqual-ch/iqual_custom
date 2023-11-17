@@ -36,7 +36,7 @@ class IqualSettingsForm extends ConfigFormBase {
     $this->entityTypeManager = $entityTypeManager;
     $this->statusCodes =
     [
-      403 => $this->t('403 Forbidden'),
+      403 => $this->t('403 Forbidden') . $this->t('(Default)'),
       401 => $this->t('401 Unauthorized'),
       402 => $this->t('402 Payment Required'),
       404 => $this->t('404 Not Found'),
