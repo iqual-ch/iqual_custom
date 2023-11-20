@@ -208,7 +208,7 @@ function _iqual_update_8003_set_entity(Element $element, $container) {
  */
 function iqual_update_9000(&$sandbox) {
   $storageManager = \Drupal::entityTypeManager()->getStorage('path_alias');
-  $query = $storageManager->getQuery();
+  $query = $storageManager->getQuery()->accessCheck(FALSE);
   $results = $query->condition('alias', NULL, 'IS')->execute();
   $entities = $results ? $storageManager->loadMultiple($results) : [];
   $storageManager->delete($entities);
@@ -302,8 +302,7 @@ function iqual_update_9005(&$sandbox) {
 /**
  * Set claro as backend theme.
  */
-function iqual_update_10000(&$sandbox)
-{
+function iqual_update_10000(&$sandbox) {
   /** @var \Drupal\Core\Config\Config $config */
   $config = \Drupal::service('config.factory')->getEditable('system.theme');
   if ($config->get('admin') == 'adminimal_theme') {
