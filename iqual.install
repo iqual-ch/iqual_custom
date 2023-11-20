@@ -317,3 +317,12 @@ function iqual_update_10000(&$sandbox) {
     $theme_installer->uninstall(['seven', 'adminimal_theme']);
   }
 }
+
+/**
+ * Set the default return code for new unpublished nodes status setting.
+ */
+function iqual_update_10001(&$sandbox) {
+  \Drupal::configFactory()->getEditable('iqual.settings')
+    ->set('entity_unpublished_status', 403)
+    ->save();
+}
