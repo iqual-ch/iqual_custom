@@ -112,7 +112,7 @@ function iqual_node_access(NodeInterface $node, $op, AccountInterface $account) 
     return;
   }
   $langcode = \Drupal::languageManager()->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
-  if (!$node->hasTranslation($langcode)) {
+  if ($node->isTranslatable() && !$node->hasTranslation($langcode)) {
     $access = AccessResult::forbidden();
   }
   else {
