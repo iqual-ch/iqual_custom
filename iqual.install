@@ -326,3 +326,27 @@ function iqual_update_10001(&$sandbox) {
     ->set('entity_unpublished_status', 403)
     ->save();
 }
+
+/**
+ * Remove "administer site configuration" from pagedesigner roles.
+ */
+function iqual_update_10002(&$sandbox) {
+  $roles = \Drupal::entityTypeManager()->getStorage('user_role')
+    ->loadMultiple(
+      [
+        'author',
+        'editor',
+        'designer',
+        'iqbm_author',
+        'iqbm_editor',
+        'iqbm_designer',
+        'iq_blog_author',
+        'authenticated',
+      ]
+    );
+
+  /** @var \Drupal\user\Entity\Role $role */
+  foreach ($roles as $role) {
+    $role->revokePermission('administer site configuration')->save();
+  }
+}
