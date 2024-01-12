@@ -11,6 +11,7 @@ use Drupal\linkit\Entity\Profile;
 use Drupal\linkit\SuggestionManager;
 use Drupal\pagedesigner\Entity\Element;
 use Drupal\user\Entity\Role;
+use Drupal\user\Entity\User;
 
 /**
  * Apply changes to configuration / environment on installation.
@@ -359,31 +360,43 @@ function iqual_update_10002(&$sandbox) {
  * @see https://www.drupal.org/project/linkit/issues/3105061
  */
 function iqual_update_10003(&$sandbox) {
+  // Switch user account to admin to pass access checks in suggestions manager.
+  $accountSwitcher = Drupal::service('account_switcher');
+  $accountSwitcher->switchTo(User::load(1));
 
-  /** @var \Drupal\linkit\SuggestionManager $manager */
-  $manager = \Drupal::service('linkit.suggestion_manager');
-  $linkit_profile = Profile::load('default_linkit');
+  try {
+    /**
+     * @var \Drupal\linkit\SuggestionManager $manager */
+    $suggestionManager = \Drupal::service('linkit.suggestion_manager');
+    $linkit_profile = Profile::load('default_linkit');
 
-  // Load elements containing links.
-  $query = \Drupal::database()->select('pagedesigner_element__field_content', 'c');
-  $query->addField('c', 'entity_id');
-  $query->addField('c', 'field_content_value');
-  $query->where("c.field_content_value LIKE '%<a href=\"/%'");
-  $res = $query->execute();
+    // Load elements containing links.
+    $query = \Drupal::database()->select('pagedesigner_element__field_content', 'c');
+    $query->addField('c', 'entity_id');
+    $query->where("c.field_content_value LIKE '%href=\"/%'");
+    $res = $query->execute();
 
-  if ($res) {
-    libxml_use_internal_errors(TRUE);
-    while ($row = $res->fetchObject()) {
-      $element = Element::load($row->entity_id);
-      $dom = new \DOMDocument();
-      $text = mb_convert_encoding($element->field_content->value, 'HTML-ENTITIES', 'UTF-8');
-      $dom->loadHTML($text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOWARNING);
-      if (_iqual_update_10003_fix_html($dom, $manager, $linkit_profile)) {
-        $element->field_content->value = $dom->saveHTML();
-        $element->save();
+    if ($res) {
+      libxml_use_internal_errors(TRUE);
+      while ($row = $res->fetchObject()) {
+        $element = Element::load($row->entity_id);
+        $dom = new \DOMDocument();
+        $text = mb_convert_encoding($element->field_content->value, 'HTML-ENTITIES', 'UTF-8');
+        $dom->loadHTML($text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOWARNING);
+        if (_iqual_update_10003_fix_html($dom, $suggestionManager, $linkit_profile)) {
+          $element->field_content->value = $dom->saveHTML();
+          $element->save();
+        }
       }
+      libxml_use_internal_errors(FALSE);
     }
-    libxml_use_internal_errors(FALSE);
+
+  }
+  catch (\Exception $e) {
+    echo $e->getMessage();
+  } finally {
+    // Switch back for other update hooks.
+    $accountSwitcher->switchBack();
   }
 }
 
