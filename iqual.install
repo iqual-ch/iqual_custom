@@ -330,11 +330,35 @@ function iqual_update_10001(&$sandbox) {
 }
 
 /**
+ * Remove "administer site configuration" from pagedesigner roles.
+ */
+function iqual_update_10002(&$sandbox) {
+  $roles = \Drupal::entityTypeManager()->getStorage('user_role')
+    ->loadMultiple(
+      [
+        'author',
+        'editor',
+        'designer',
+        'iqbm_author',
+        'iqbm_editor',
+        'iqbm_designer',
+        'iq_blog_author',
+        'authenticated',
+      ]
+    );
+
+  /** @var \Drupal\user\Entity\Role $role */
+  foreach ($roles as $role) {
+    $role->revokePermission('administer site configuration')->save();
+  }
+}
+
+/**
  * Correct missing meta data in links due to linkit/bootstrap conflict.
  *
  * @see https://www.drupal.org/project/linkit/issues/3105061
  */
-function iqual_update_10002(&$sandbox) {
+function iqual_update_10003(&$sandbox) {
 
   /** @var \Drupal\linkit\SuggestionManager $manager */
   $manager = \Drupal::service('linkit.suggestion_manager');
@@ -354,7 +378,7 @@ function iqual_update_10002(&$sandbox) {
       $dom = new \DOMDocument();
       $text = mb_convert_encoding($element->field_content->value, 'HTML-ENTITIES', 'UTF-8');
       $dom->loadHTML($text, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD | LIBXML_NOWARNING);
-      if (_iqual_update_10000_fix_html($dom, $manager, $linkit_profile)) {
+      if (_iqual_update_10003_fix_html($dom, $manager, $linkit_profile)) {
         $element->field_content->value = $dom->saveHTML();
         $element->save();
       }
@@ -373,7 +397,7 @@ function iqual_update_10002(&$sandbox) {
  * @param \Drupal\linkit\Entity\Profile $linkit_profile
  *   The linkit profile to use.
  */
-function _iqual_update_10000_fix_html(\DOMDocument &$dom, SuggestionManager $suggestionManager, Profile $linkit_profile) {
+function _iqual_update_10003_fix_html(\DOMDocument &$dom, SuggestionManager $suggestionManager, Profile $linkit_profile) {
   $changed = FALSE;
   /** @var \DOMElement $child */
   foreach ($dom->getElementsByTagName('a') as $child) {
