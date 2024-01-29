@@ -435,3 +435,30 @@ function _iqual_update_10003_fix_html(\DOMDocument &$dom, SuggestionManager $sug
   }
   return $changed;
 }
+
+/**
+ * Set Swiss defaults and timezone for regional settings and user.
+ */
+function iqual_update_10004() {
+  $system_config = \Drupal::configFactory()->getEditable('system.date');
+  if ($system_config->get('timezone.default') == 'UTC') {
+    $system_config->set('first_day', 1);
+    $system_config->set('timezone.default', 'Europe/Zurich');
+    $system_config->set('timezone.user.configurable', FALSE);
+    $system_config->set('timezone.user.warn', FALSE);
+  }
+  if ($system_config->get('country.default') == '') {
+    $system_config->set('country.default', 'CH');
+  }
+  $system_config->save();
+
+  $uids = \Drupal::entityQuery('user')
+    ->accessCheck(FALSE)
+    ->condition('timezone', 'UTC')
+    ->execute();
+  foreach ($uids as $uid) {
+    $user = User::load($uid);
+    $user->timezone->value = 'Europe/Zurich';
+    $user->save();
+  }
+}
