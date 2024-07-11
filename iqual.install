@@ -490,7 +490,7 @@ function iqual_update_10005(&$sandbox) {
 /**
  * Activate all frontendpublishing config rest resources, with uuid.
  */
-function iqual_update_1006(&$sandbox) {
+function iqual_update_10006(&$sandbox) {
   $config_ids = [
     'rest.resource.frontendpublishing_copy',
     'rest.resource.frontendpublishing_move',
