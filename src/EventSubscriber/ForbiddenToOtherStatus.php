@@ -47,8 +47,8 @@ class ForbiddenToOtherStatus extends HttpExceptionSubscriberBase {
     protected LanguageManagerInterface $languageManager,
     protected EntityTypeManagerInterface $entityTypeManager,
     protected RouteMatchInterface $routeMatch,
-    ConfigFactoryInterface $config_factory
-    ) {
+    ConfigFactoryInterface $config_factory,
+  ) {
     $this->statusCode = $config_factory->get('iqual.settings')
       ->get('entity_unpublished_status');
   }
