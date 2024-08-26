@@ -12,6 +12,7 @@ use Drupal\linkit\SuggestionManager;
 use Drupal\pagedesigner\Entity\Element;
 use Drupal\user\Entity\Role;
 use Drupal\user\Entity\User;
+use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -482,6 +483,60 @@ function iqual_update_10005(&$sandbox) {
     $config = \Drupal::configFactory()->getEditable($config_id);
     if (empty($config->getRawData())) {
       $config->setData($data)->save(TRUE);
+    }
+  }
+}
+
+/**
+ * Activate all frontendpublishing config rest resources, with uuid.
+ */
+function iqual_update_10006(&$sandbox) {
+  $config_ids = [
+    'rest.resource.frontendpublishing_copy',
+    'rest.resource.frontendpublishing_move',
+    'rest.resource.frontendpublishing_publish',
+    'rest.resource.frontendpublishing_transitions',
+    'rest.resource.frontendpublishing_unpublish',
+  ];
+
+  // Get the default language code.
+  $default_language = \Drupal::languageManager()->getDefaultLanguage()->getId();
+
+  foreach ($config_ids as $config_id) {
+    $config_path = \Drupal::service('extension.list.module')
+      ->getPath('frontendpublishing') . '/config/install/' . $config_id . '.yml';
+
+    if (file_exists($config_path)) {
+      try {
+        $data = Yaml::parseFile($config_path);
+      } catch (ParseException $e) {
+        \Drupal::logger('iqual')->error('Unable to parse YAML file: @file. Error: @error', ['@file' => $config_path, '@error' => $e->getMessage()]);
+        continue;
+      }
+
+      $config = \Drupal::configFactory()->getEditable($config_id);
+      $existing_data = $config->getRawData();
+
+      // Ensure UUID is set and preserve the existing UUID if it exists.
+      if (empty($data['uuid'])) {
+        $data['uuid'] = !empty($existing_data['uuid']) ? $existing_data['uuid'] : \Drupal::service('uuid')->generate();
+      }
+
+      // Preserve the _core property if it exists in the existing configuration.
+      if (isset($existing_data['_core'])) {
+        $data['_core'] = $existing_data['_core'];
+      }
+
+      // Ensure langcode is set and preserve the existing langcode if it exists.
+      $data['langcode'] = !empty($existing_data['langcode']) ? $existing_data['langcode'] : $default_language;
+
+      // Manually merge the new data into the existing data, preserving order.
+      foreach ($data as $key => $value) {
+        $existing_data[$key] = $value;
+      }
+
+      // Save the merged configuration data.
+      $config->setData($existing_data)->save(TRUE);
     }
   }
 }
