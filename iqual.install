@@ -541,12 +541,12 @@ function iqual_update_10006(&$sandbox) {
   }
 }
 
-
 /**
  * Adjust domain redirects.
  */
 function iqual_update_10007(&$sandbox) {
   _set_redirect_target();
+  _set_remove_patch();
 }
 
 /**
@@ -554,9 +554,7 @@ function iqual_update_10007(&$sandbox) {
  */
 function _set_redirect_target() {
   $config = \Drupal::configFactory()->getEditable('redirect_domain.domains');
-
   $configData = $config->get("domain_redirects");
-  print_r($configData);
   foreach ($configData as $key => $data) {
     foreach ($data as $i => $redirectItem) {
       if (str_ends_with($redirectItem['sub_path'], '*')) {
@@ -574,4 +572,14 @@ function _set_redirect_target() {
 
   $config->set("domain_redirects", $configData);
   $config->save();
+}
+
+/**
+ * Remove patch file.
+ */
+function _set_remove_patch() {
+  $patchFile = str_replace("/public", "", DRUPAL_ROOT) . '/patches/20200512_redirect_domain_keep_path.patch';
+  if (file_exists($patchFile)) {
+    unlink($patchFile);
+  }
 }
