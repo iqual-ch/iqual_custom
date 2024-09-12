@@ -540,3 +540,46 @@ function iqual_update_10006(&$sandbox) {
     }
   }
 }
+
+/**
+ * Adjust domain redirects.
+ */
+function iqual_update_10007(&$sandbox) {
+  _set_redirect_target();
+  _set_remove_patch();
+}
+
+/**
+ * Adjust domain redirects.
+ */
+function _set_redirect_target() {
+  $config = \Drupal::configFactory()->getEditable('redirect_domain.domains');
+  $configData = $config->get("domain_redirects");
+  foreach ($configData as $key => $data) {
+    foreach ($data as $i => $redirectItem) {
+      if (str_ends_with($redirectItem['sub_path'], '*')) {
+        if (!str_ends_with($redirectItem['destination'], '/*')) {
+          if (str_ends_with($redirectItem['destination'], '/')) {
+            $configData[$key][$i]['destination'] .= '*';
+          }
+          else {
+            $configData[$key][$i]['destination'] .= '/*';
+          }
+        }
+      }
+    }
+  }
+
+  $config->set("domain_redirects", $configData);
+  $config->save();
+}
+
+/**
+ * Remove patch file.
+ */
+function _set_remove_patch() {
+  $patchFile = str_replace("/public", "", DRUPAL_ROOT) . '/patches/20200512_redirect_domain_keep_path.patch';
+  if (file_exists($patchFile)) {
+    unlink($patchFile);
+  }
+}

@@ -6,5 +6,12 @@
     "php": "^8.1",
     "drupal/core": "^9.5 || ^10",
     "drupal/exif_orientation": "^1.4"
+  },
+  "extra": {
+    "patches": {
+      "drupal/redirect": {
+        "#2904056: Keep path on domain redirect": "https://git.drupalcode.org/project/redirect/-/merge_requests/29.diff"
+      }
+    }
   }
 }
