@@ -103,22 +103,3 @@ function iqual_get_locale_from_langcode($languageCode) {
   }
   return $languageLocaleCode;
 }
-
-/**
- * Implements hook_node_access().
- */
-function iqual_node_access(NodeInterface $node, $op, AccountInterface $account) {
-  if (!$account->isAnonymous()) {
-    return;
-  }
-  $langcode = \Drupal::languageManager()->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
-  if ($node->isTranslatable() && !$node->hasTranslation($langcode)) {
-    $access = AccessResult::forbidden();
-  }
-  else {
-    $access = AccessResult::neutral();
-  }
-  $access->addCacheableDependency($node);
-  $access->addCacheableDependency($account->getRoles());
-  return $access;
-}
