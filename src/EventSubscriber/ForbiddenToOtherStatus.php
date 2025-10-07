@@ -134,7 +134,7 @@ class ForbiddenToOtherStatus extends HttpExceptionSubscriberBase {
    * @return bool
    *   True when the status code should be returned, false otherwise.
    */
-  public function statusRequired(EntityPublishedInterface $entity = NULL) {
+  public function statusRequired(?EntityPublishedInterface $entity = NULL) {
     if (!$entity) {
       return FALSE;
     }

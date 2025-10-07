@@ -509,8 +509,12 @@ function iqual_update_10006(&$sandbox) {
     if (file_exists($config_path)) {
       try {
         $data = Yaml::parseFile($config_path);
-      } catch (ParseException $e) {
-        \Drupal::logger('iqual')->error('Unable to parse YAML file: @file. Error: @error', ['@file' => $config_path, '@error' => $e->getMessage()]);
+      }
+      catch (ParseException $e) {
+        \Drupal::logger('iqual')->error('Unable to parse YAML file: @file. Error: @error', [
+          '@file' => $config_path,
+          '@error' => $e->getMessage(),
+        ]);
         continue;
       }
 

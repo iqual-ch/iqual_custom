@@ -38,7 +38,7 @@ class Redirect implements HttpKernelInterface {
   /**
    * {@inheritDoc}
    */
-  public function handle(Request $request, $type = self::MASTER_REQUEST, $catch = TRUE) : Response {
+  public function handle(Request $request, $type = self::MAIN_REQUEST, $catch = TRUE) : Response {
     $response = $this->httpKernel->handle($request, $type, $catch);
     return $this->redirectResponse ?: $response;
   }
