@@ -2,7 +2,6 @@
 
 namespace Drupal\iqual\Form;
 
-use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -27,31 +26,22 @@ class IqualSettingsForm extends ConfigFormBase {
   protected $statusCodes = [];
 
   /**
-   * Constructs the form.
-   *
-   * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
-   *   The entity type manger service.
-   */
-  public function __construct(EntityTypeManager $entityTypeManager) {
-    $this->entityTypeManager = $entityTypeManager;
-    $this->statusCodes =
-    [
-      403 => $this->t('403 Forbidden') . $this->t('(Default)'),
-      401 => $this->t('401 Unauthorized'),
-      402 => $this->t('402 Payment Required'),
-      404 => $this->t('404 Not Found'),
-      407 => $this->t('407 Proxy Authentication Required'),
-      410 => $this->t('410 Gone'),
-    ];
-  }
-
-  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager')
-    );
+    $instance = parent::create($container);
+    $instance->entityTypeManager = $container->get('entity_type.manager');
+    $instance->statusCodes =
+    [
+      403 => $instance->t('403 Forbidden') . ' ' . $instance->t('(Default)'),
+      401 => $instance->t('401 Unauthorized'),
+      402 => $instance->t('402 Payment Required'),
+      404 => $instance->t('404 Not Found'),
+      407 => $instance->t('407 Proxy Authentication Required'),
+      410 => $instance->t('410 Gone'),
+    ];
+
+    return $instance;
   }
 
   /**
