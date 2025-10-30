@@ -12,6 +12,9 @@
     "patches": {
       "drupal/redirect": {
         "[https://dgo.to/2904056]: Keep path on domain redirect": "https://www.drupal.org/files/issues/2025-09-24/2904056-38_keeping_path_on_domain_redirect.patch"
+      },
+      "drupal/ui_patterns": {
+        "[https://dgo.to/3315661]: Check for views live preview instead of preview when rendering row warning": "https://www.drupal.org/files/issues/2023-07-06/check-for-views-preview-3315661-21.patch"
       }
     }
   }
