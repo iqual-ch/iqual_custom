@@ -587,3 +587,52 @@ function _set_remove_patch() {
     unlink($patchFile);
   }
 }
+
+/**
+ * Configure yoast_seo_widget fields to enable title and description editing.
+ */
+function iqual_update_11001(&$sandbox) {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $entity_form_display_storage = $entity_type_manager->getStorage('entity_form_display');
+  
+  // Load all entity form displays.
+  $form_displays = $entity_form_display_storage->loadMultiple();
+  
+  $updated_count = 0;
+  
+  foreach ($form_displays as $form_display) {
+    $changed = FALSE;
+    $components = $form_display->getComponents();
+    
+    foreach ($components as $field_name => $component) {
+      // Check if this field uses the yoast_seo_widget.
+      if (isset($component['type']) && $component['type'] === 'yoast_seo_widget') {
+        // Get current settings or initialize empty array.
+        $settings = isset($component['settings']) ? $component['settings'] : [];
+        
+        // Set the required settings.
+        $settings['edit_title'] = TRUE;
+        $settings['edit_description'] = TRUE;
+        
+        // Update the component with new settings.
+        $component['settings'] = $settings;
+        $form_display->setComponent($field_name, $component);
+        $changed = TRUE;
+      }
+    }
+    
+    // Save the form display if any changes were made.
+    if ($changed) {
+      $form_display->save();
+      $updated_count++;
+    }
+  }
+  
+  if ($updated_count > 0) {
+    \Drupal::logger('iqual')->info('Updated @count entity form displays with yoast_seo_widget settings.', [
+      '@count' => $updated_count,
+    ]);
+  } else {
+    \Drupal::logger('iqual')->info('No entity form displays with yoast_seo_widget found to update.');
+  }
+}
