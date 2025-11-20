@@ -12,6 +12,9 @@
     "patches": {
       "drupal/redirect": {
         "[https://dgo.to/2904056]: Keep path on domain redirect": "https://www.drupal.org/files/issues/2025-09-24/2904056-38_keeping_path_on_domain_redirect.patch"
+      },
+      "drupal/yoast_seo": {
+        "[https://dgo.to/3537343]: Javascript error": "https://www.drupal.org/files/issues/2025-08-07/3537343-MR-43_fix-javascript-error.patch"
       }
     }
   }
