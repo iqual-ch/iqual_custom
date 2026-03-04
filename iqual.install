@@ -587,3 +587,400 @@ function _set_remove_patch() {
     unlink($patchFile);
   }
 }
+
+/**
+ * Remove image style lines from image style template YAML string.
+ */
+function _remove_style_lines(string $settings, array $styles_to_remove): string {
+  if ($settings === '') {
+    return $settings;
+  }
+
+  $styles_to_remove = array_values(array_unique(array_filter(
+    array_map(static fn ($style) => trim((string) $style), $styles_to_remove),
+    static fn ($style) => $style !== ''
+  )));
+
+  if (empty($styles_to_remove)) {
+    return $settings;
+  }
+
+  $has_real_newlines = str_contains($settings, "\n") || str_contains($settings, "\r");
+  $uses_escaped_crlf = !$has_real_newlines && str_contains($settings, '\\r\\n');
+  $uses_escaped_lf = !$has_real_newlines && !$uses_escaped_crlf && str_contains($settings, '\\n');
+
+  $eol = "\n";
+  if ($has_real_newlines) {
+    if (str_contains($settings, "\r\n")) {
+      $eol = "\r\n";
+    }
+    elseif (str_contains($settings, "\r")) {
+      $eol = "\r";
+    }
+  }
+
+  $working_settings = $settings;
+  if ($uses_escaped_crlf) {
+    $working_settings = str_replace('\\r\\n', "\n", $working_settings);
+    $eol = "\n";
+  }
+  elseif ($uses_escaped_lf) {
+    $working_settings = str_replace('\\n', "\n", $working_settings);
+    $eol = "\n";
+  }
+
+  $quoted_styles = array_map(static fn ($style) => preg_quote((string) $style, '/'), $styles_to_remove);
+  $pattern = '/^\s*(?:' . implode('|', $quoted_styles) . ')\s*:/';
+
+  $filtered_lines = [];
+  foreach (explode($eol, $working_settings) as $line) {
+    if (preg_match($pattern, $line) === 1) {
+      continue;
+    }
+    $filtered_lines[] = $line;
+  }
+
+  $updated_settings = implode($eol, $filtered_lines);
+
+  if ($uses_escaped_crlf) {
+    return str_replace("\n", '\\r\\n', $updated_settings);
+  }
+
+  if ($uses_escaped_lf) {
+    return str_replace("\n", '\\n', $updated_settings);
+  }
+
+  return $updated_settings;
+}
+
+/**
+ * Delete cleanup image styles that are not referenced in custom Twig files.
+ */
+function iqual_update_1008() {
+  $styles_to_remove = [
+    // Regular.
+    'pdri__4000',
+    'pdri__3600',
+    'pdri__3200',
+    'pdri__2800',
+    'pdri__2400',
+    'pdri__1800',
+    'pdri__1600',
+    'pdri__1400',
+    'pdri__1000',
+    'pdri__900',
+    'pdri__700',
+    'pdri__600',
+    'pdri__500',
+    'pdri__300',
+    'pdri__200',
+
+    // Focal point 1920 / 400.
+    'pdri_1920_400__4000',
+    'pdri_1920_400__3600',
+    'pdri_1920_400__3200',
+    'pdri_1920_400__2800',
+    'pdri_1920_400__2400',
+    'pdri_1920_400__1800',
+    'pdri_1920_400__1600',
+    'pdri_1920_400__1400',
+    'pdri_1920_400__1000',
+    'pdri_1920_400__900',
+    'pdri_1920_400__700',
+    'pdri_1920_400__600',
+    'pdri_1920_400__500',
+    'pdri_1920_400__300',
+    'pdri_1920_400__200',
+
+    // Focal point 1920 / 600.
+    'pdri_1920_600__4000',
+    'pdri_1920_600__3600',
+    'pdri_1920_600__3200',
+    'pdri_1920_600__2800',
+    'pdri_1920_600__2400',
+    'pdri_1920_600__1800',
+    'pdri_1920_600__1600',
+    'pdri_1920_600__1400',
+    'pdri_1920_600__1000',
+    'pdri_1920_600__900',
+    'pdri_1920_600__700',
+    'pdri_1920_600__600',
+    'pdri_1920_600__500',
+    'pdri_1920_600__300',
+    'pdri_1920_600__200',
+
+    // Focal point 1 / 2.
+    'pdri_1_2__4000',
+    'pdri_1_2__3600',
+    'pdri_1_2__3200',
+    'pdri_1_2__2800',
+    'pdri_1_2__2400',
+    'pdri_1_2__1800',
+    'pdri_1_2__1600',
+    'pdri_1_2__1400',
+    'pdri_1_2__1000',
+    'pdri_1_2__900',
+    'pdri_1_2__700',
+    'pdri_1_2__600',
+    'pdri_1_2__500',
+    'pdri_1_2__300',
+    'pdri_1_2__200',
+
+    // Focal point 1 / 3.
+    'pdri_1_3__4000',
+    'pdri_1_3__3600',
+    'pdri_1_3__3200',
+    'pdri_1_3__2800',
+    'pdri_1_3__2400',
+    'pdri_1_3__1800',
+    'pdri_1_3__1600',
+    'pdri_1_3__1400',
+    'pdri_1_3__1000',
+    'pdri_1_3__900',
+    'pdri_1_3__700',
+    'pdri_1_3__600',
+    'pdri_1_3__500',
+    'pdri_1_3__300',
+    'pdri_1_3__200',
+
+    // Focal point 2 / 3.
+    'pdri_2_3__4000',
+    'pdri_2_3__3600',
+    'pdri_2_3__3200',
+    'pdri_2_3__2800',
+    'pdri_2_3__2400',
+    'pdri_2_3__1800',
+    'pdri_2_3__1600',
+    'pdri_2_3__1400',
+    'pdri_2_3__1000',
+    'pdri_2_3__900',
+    'pdri_2_3__700',
+    'pdri_2_3__600',
+    'pdri_2_3__500',
+    'pdri_2_3__300',
+    'pdri_2_3__200',
+
+    // Focal point 3 / 2.
+    'pdri_3_2__4000',
+    'pdri_3_2__3600',
+    'pdri_3_2__3200',
+    'pdri_3_2__2800',
+    'pdri_3_2__2400',
+    'pdri_3_2__1800',
+    'pdri_3_2__1600',
+    'pdri_3_2__1400',
+    'pdri_3_2__1000',
+    'pdri_3_2__900',
+    'pdri_3_2__700',
+    'pdri_3_2__600',
+    'pdri_3_2__500',
+    'pdri_3_2__300',
+    'pdri_3_2__200',
+
+    // Focal point 3 / 4.
+    'pdri_3_4__4000',
+    'pdri_3_4__3600',
+    'pdri_3_4__3200',
+    'pdri_3_4__2800',
+    'pdri_3_4__2400',
+    'pdri_3_4__1800',
+    'pdri_3_4__1600',
+    'pdri_3_4__1400',
+    'pdri_3_4__1000',
+    'pdri_3_4__900',
+    'pdri_3_4__700',
+    'pdri_3_4__600',
+    'pdri_3_4__500',
+    'pdri_3_4__300',
+    'pdri_3_4__200',
+
+    // Focal point 4 / 3.
+    'pdri_4_2__4000',
+    'pdri_4_2__3600',
+    'pdri_4_2__3200',
+    'pdri_4_2__2800',
+    'pdri_4_2__2400',
+    'pdri_4_2__1800',
+    'pdri_4_2__1600',
+    'pdri_4_2__1400',
+    'pdri_4_2__1000',
+    'pdri_4_2__900',
+    'pdri_4_2__700',
+    'pdri_4_2__600',
+    'pdri_4_2__500',
+    'pdri_4_2__300',
+    'pdri_4_2__200',
+
+    // Focal point 16 / 9.
+    'pdri_16_9__4000',
+    'pdri_16_9__3600',
+    'pdri_16_9__3200',
+    'pdri_16_9__2800',
+    'pdri_16_9__2400',
+    'pdri_16_9__1800',
+    'pdri_16_9__1600',
+    'pdri_16_9__1400',
+    'pdri_16_9__1000',
+    'pdri_16_9__900',
+    'pdri_16_9__700',
+    'pdri_16_9__600',
+    'pdri_16_9__500',
+    'pdri_16_9__300',
+    'pdri_16_9__200',
+
+    // Focal point 1 / 1.
+    'pdri_1_1__4000',
+    'pdri_1_1__3600',
+    'pdri_1_1__3200',
+    'pdri_1_1__2800',
+    'pdri_1_1__2400',
+    'pdri_1_1__1800',
+    'pdri_1_1__1600',
+    'pdri_1_1__1400',
+    'pdri_1_1__1000',
+    'pdri_1_1__900',
+    'pdri_1_1__700',
+    'pdri_1_1__600',
+    'pdri_1_1__500',
+    'pdri_1_1__300',
+    'pdri_1_1__200',
+  ];
+
+  $styles_to_remove = array_values(array_unique(array_filter(
+    array_map(static fn ($style) => trim((string) $style), $styles_to_remove),
+    static fn ($style) => $style !== ''
+  )));
+
+  $result = _iqual_update_style_templates_and_delete_unreferenced_styles($styles_to_remove);
+
+  return t('Updated @templates image style templates. Deleted @deleted styles and kept @kept due to custom Twig references.', [
+    '@templates' => $result['updated_templates'],
+    '@deleted' => $result['deleted_count'],
+    '@kept' => $result['kept_count'],
+  ]);
+}
+
+/**
+ * Update style templates and delete non-referenced image styles.
+ */
+function _iqual_update_style_templates_and_delete_unreferenced_styles(array $styles_to_remove): array {
+  $styles_to_remove = array_values(array_unique(array_filter(
+    array_map(static fn ($style) => trim((string) $style), $styles_to_remove),
+    static fn ($style) => $style !== ''
+  )));
+
+  if (empty($styles_to_remove)) {
+    return [
+      'updated_templates' => 0,
+      'deleted_count' => 0,
+      'kept_count' => 0,
+    ];
+  }
+
+  $usage_map = _iqual_find_style_usages($styles_to_remove, ['modules/custom', 'themes/custom']);
+  $used_styles = array_keys(array_filter($usage_map, static fn ($matches) => !empty($matches)));
+  $styles_to_delete = array_values(array_diff($styles_to_remove, $used_styles));
+
+  $template_storage = \Drupal::entityTypeManager()->getStorage('image_style_template');
+  $templates = $template_storage->loadMultiple();
+  $updated_templates = 0;
+
+  foreach ($templates as $template) {
+    /** @var \Drupal\pagedesigner_responsive_images\Entity\ImageStyleTemplate $template */
+    $settings = (string) ($template->get('settings') ?? '');
+    if ($settings === '') {
+      continue;
+    }
+
+    $updated_settings = _remove_style_lines($settings, $styles_to_remove);
+    if ($updated_settings !== $settings) {
+      $template->set('settings', $updated_settings);
+      $template->save();
+      $updated_templates++;
+    }
+  }
+
+  $storage = \Drupal::entityTypeManager()->getStorage('image_style');
+  $styles = $storage->loadMultiple($styles_to_delete);
+  $deleted_count = count($styles);
+  if (!empty($styles)) {
+    $storage->delete($styles);
+  }
+
+  $logger = \Drupal::logger('iqual');
+  foreach ($used_styles as $style) {
+    $logger->warning('Image style "@style" was not deleted because it is referenced in custom Twig: @files', [
+      '@style' => $style,
+      '@files' => implode(', ', $usage_map[$style]),
+    ]);
+  }
+
+  return [
+    'updated_templates' => $updated_templates,
+    'deleted_count' => $deleted_count,
+    'kept_count' => count($used_styles),
+  ];
+}
+
+/**
+ * Find image style name usages in custom modules/themes Twig files.
+ */
+function _iqual_find_style_usages(array $style_names, array $relative_dirs): array {
+  $style_names = array_values(array_unique(array_filter(
+    array_map(static fn ($style) => trim((string) $style), $style_names),
+    static fn ($style) => $style !== ''
+  )));
+
+  $usage_map = array_fill_keys($style_names, []);
+  if (empty($style_names)) {
+    return $usage_map;
+  }
+
+  $excluded_root = rtrim(DRUPAL_ROOT, '/') . '/modules/custom/iqual_custom/';
+
+  foreach ($relative_dirs as $relative_dir) {
+    $scan_root = DRUPAL_ROOT . '/' . ltrim($relative_dir, '/');
+    if (!is_dir($scan_root)) {
+      continue;
+    }
+
+    $iterator = new \RecursiveIteratorIterator(
+      new \RecursiveDirectoryIterator($scan_root, \FilesystemIterator::SKIP_DOTS)
+    );
+
+    /** @var \SplFileInfo $file_info */
+    foreach ($iterator as $file_info) {
+      if (!$file_info->isFile()) {
+        continue;
+      }
+
+      $path_name = $file_info->getPathname();
+      if (str_starts_with($path_name, $excluded_root)) {
+        continue;
+      }
+
+      $ext = strtolower($file_info->getExtension());
+      if ($ext !== 'twig') {
+        continue;
+      }
+
+      $contents = @file_get_contents($path_name);
+      if ($contents === FALSE || $contents === '') {
+        continue;
+      }
+
+      $relative_path = ltrim(str_replace(DRUPAL_ROOT, '', $path_name), '/');
+      foreach ($style_names as $style_name) {
+        if (str_contains($contents, $style_name)) {
+          $usage_map[$style_name][] = $relative_path;
+        }
+      }
+    }
+  }
+
+  foreach ($usage_map as $style_name => $paths) {
+    $usage_map[$style_name] = array_values(array_unique($paths));
+  }
+
+  return $usage_map;
+}
