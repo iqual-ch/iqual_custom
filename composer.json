@@ -14,7 +14,7 @@
         "[https://dgo.to/2904056]: Keep path on domain redirect": "https://git.drupalcode.org/project/redirect/-/merge_requests/29/diffs.diff?diff_id=1844715"
       },
       "drupal/yoast_seo": {
-        "[https://dgo.to/3537343]: Javascript error": "https://www.drupal.org/files/issues/2025-08-07/3537343-MR-43_fix-javascript-error.patch"
+        "[https://dgo.to/3560779]: Javascript error": "https://www.drupal.org/files/issues/2026-01-24/3560779-5.patch"
       }
     }
   }
