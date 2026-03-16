@@ -656,7 +656,7 @@ function _remove_style_lines(string $settings, array $styles_to_remove): string 
 /**
  * Delete cleanup image styles that are not referenced in custom Twig files.
  */
-function iqual_update_1008() {
+function iqual_update_10008() {
   $styles_to_remove = [
     // Regular.
     'pdri__4000',
