@@ -984,3 +984,36 @@ function _iqual_find_style_usages(array $style_names, array $relative_dirs): arr
 
   return $usage_map;
 }
+
+/**
+ * Update media image field settings for max filesize and resolution.
+ */
+function iqual_update_10009() {
+  $config = \Drupal::configFactory()->getEditable('field.field.media.image.field_media_image');
+  if ($config->isNew()) {
+    return t('Media image field configuration not found.');
+  }
+
+  $updated = [];
+
+  // Update max_filesize to 10 MB.
+  if ($config->get('settings.max_filesize') !== '10 MB') {
+    $config->set('settings.max_filesize', '10 MB');
+    $updated[] = 'max_filesize';
+  }
+
+  // Update max_resolution to 3840x2160 (4K).
+  if ($config->get('settings.max_resolution') !== '3840x2160') {
+    $config->set('settings.max_resolution', '3840x2160');
+    $updated[] = 'max_resolution';
+  }
+
+  if (!empty($updated)) {
+    $config->save();
+    return t('Updated media image field settings: @settings.', [
+      '@settings' => implode(', ', $updated),
+    ]);
+  }
+
+  return t('Media image field settings already up to date.');
+}
