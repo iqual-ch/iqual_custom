@@ -881,22 +881,27 @@ function _iqual_update_style_templates_and_delete_unreferenced_styles(array $sty
   $used_styles = array_keys(array_filter($usage_map, static fn ($matches) => !empty($matches)));
   $styles_to_delete = array_values(array_diff($styles_to_remove, $used_styles));
 
-  $template_storage = \Drupal::entityTypeManager()->getStorage('image_style_template');
-  $templates = $template_storage->loadMultiple();
+  // Specific to pagedesigner_responsive_images module: Remove references to the styles in image style templates.
   $updated_templates = 0;
+  if (\Drupal::moduleHandler()->moduleExists('pagedesigner_responsive_images')) {
 
-  foreach ($templates as $template) {
-    /** @var \Drupal\pagedesigner_responsive_images\Entity\ImageStyleTemplate $template */
-    $settings = (string) ($template->get('settings') ?? '');
-    if ($settings === '') {
-      continue;
-    }
+    $template_storage = \Drupal::entityTypeManager()->getStorage('image_style_template');
+    $templates = $template_storage->loadMultiple();
+   
 
-    $updated_settings = _remove_style_lines($settings, $styles_to_remove);
-    if ($updated_settings !== $settings) {
-      $template->set('settings', $updated_settings);
-      $template->save();
-      $updated_templates++;
+    foreach ($templates as $template) {
+      /** @var \Drupal\pagedesigner_responsive_images\Entity\ImageStyleTemplate $template */
+      $settings = (string) ($template->get('settings') ?? '');
+      if ($settings === '') {
+        continue;
+      }
+
+      $updated_settings = _remove_style_lines($settings, $styles_to_remove);
+      if ($updated_settings !== $settings) {
+        $template->set('settings', $updated_settings);
+        $template->save();
+        $updated_templates++;
+      }
     }
   }
 
