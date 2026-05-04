@@ -1022,3 +1022,16 @@ function iqual_update_10009() {
 
   return t('Media image field settings already up to date.');
 }
+
+/**
+ * Disable the 'frontpage' view.
+ */
+function iqual_update_10010() {
+  $view = \Drupal::configFactory()->getEditable('views.view.frontpage');
+  if (!$view->isNew()) {
+    $view->set('status', FALSE);
+    $view->save();
+    return t("Disabled the 'frontpage' view.");
+  }
+  return t("The 'frontpage' view was not found.");
+}
