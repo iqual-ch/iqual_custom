@@ -1064,7 +1064,7 @@ function _iqual_rfi_supports_excluded_directories($dataSource): bool {
  * Add recycle-bin to the exclusion list of Remote File Importer data sources.
  */
 function iqual_update_10011() {
-  if (!\Drupal::moduleExists('remote_file_importer')) {
+  if (!\Drupal::moduleHandler()->moduleExists('remote_file_importer')) {
     return t('Remote File Importer is not installed, nothing to do.');
   }
 
@@ -1104,7 +1104,7 @@ function iqual_update_10011() {
  * Delete previously imported copies of excluded Remote File Importer folders.
  */
 function iqual_update_10012() {
-  if (!\Drupal::moduleExists('remote_file_importer')) {
+  if (!\Drupal::moduleHandler()->moduleExists('remote_file_importer')) {
     return t('Remote File Importer is not installed, nothing to do.');
   }
 
