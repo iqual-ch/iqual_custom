@@ -1100,3 +1100,76 @@ function iqual_update_10011() {
   return t('All data sources supporting exclusion already exclude recycle-bin.');
 }
 
+/**
+ * Delete previously imported copies of excluded Remote File Importer folders.
+ */
+function iqual_update_10012() {
+  if (!\Drupal::moduleExists('remote_file_importer')) {
+    return t('Remote File Importer is not installed, nothing to do.');
+  }
+
+  // /!\ WARNING: destructive operation. For every data source, this hook
+  // PERMANENTLY DELETES any local directory (at any depth inside the
+  // destination folder) whose name matches an entry of the data source's
+  // exclude_directories setting, as if it had never been imported. Imported
+  // files are unmanaged (no file entities), so deleting from disk is
+  // sufficient — but there is no undo. Review each data source's
+  // exclusion list before running this update.
+  $fileSystem = \Drupal::service('file_system');
+  $storage = \Drupal::entityTypeManager()->getStorage('rfi_data_source');
+  $deleted = [];
+
+  foreach ($storage->loadMultiple() as $dataSource) {
+    if (!_iqual_rfi_supports_excluded_directories($dataSource)) {
+      continue;
+    }
+
+    // Normalize the exclusion list the same way the module does.
+    $settings = $dataSource->get('settings') ?: [];
+    $excluded = array_map('trim', explode(',', $settings['exclude_directories'] ?? ''));
+    $excluded = array_map(static fn (string $item): string => trim(strtolower($item), '/'), $excluded);
+    $excluded = array_values(array_filter($excluded, static fn (string $item): bool => $item !== ''));
+    if (empty($excluded)) {
+      continue;
+    }
+
+    $destination = $dataSource->get('destination_base') . $dataSource->get('destination_folder');
+    $realpath = $fileSystem->realpath($destination);
+    if (!$realpath || !is_dir($realpath)) {
+      continue;
+    }
+
+    // Collect matching directories first, as deleting while iterating is
+    // not safe.
+    $targets = [];
+    $iterator = new \RecursiveIteratorIterator(
+      new \RecursiveDirectoryIterator($realpath, \FilesystemIterator::SKIP_DOTS),
+      \RecursiveIteratorIterator::SELF_FIRST
+    );
+    foreach ($iterator as $item) {
+      if ($item->isDir() && in_array(strtolower($item->getFilename()), $excluded, TRUE)) {
+        $targets[] = $item->getPathname();
+      }
+    }
+
+    foreach ($targets as $target) {
+      // Skip targets nested inside another target; deleting the parent
+      // already removes them.
+      foreach ($targets as $parent) {
+        if ($target !== $parent && str_starts_with($target, $parent . DIRECTORY_SEPARATOR)) {
+          continue 2;
+        }
+      }
+      $fileSystem->deleteRecursive($target);
+      $deleted[] = $dataSource->id() . ':' . substr($target, strlen($realpath));
+    }
+  }
+
+  if (!empty($deleted)) {
+    return t('Deleted local copies of excluded folder(s): @paths', [
+      '@paths' => implode(', ', $deleted),
+    ]);
+  }
+
+  return t('No local copies of excluded folders found.');
+}
