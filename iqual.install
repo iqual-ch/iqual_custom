@@ -1035,3 +1035,68 @@ function iqual_update_10010() {
   }
   return t("The 'frontpage' view was not found.");
 }
+
+/**
+ * Determines whether an RFI data source's plugin supports excluded folders.
+ *
+ * Directory exclusion is an opt-in plugin capability (see drupal.org issue
+ * #3591251); currently only the SFTP datasource plugin implements it. The
+ * method_exists() check keeps this safe on sites still running a module
+ * version without the exclusion feature.
+ *
+ * @param \Drupal\remote_file_importer\Entity\DataSource $dataSource
+ *   The data source config entity.
+ *
+ * @return bool
+ *   TRUE if the plugin supports directory exclusion, FALSE otherwise.
+ */
+function _iqual_rfi_supports_excluded_directories($dataSource): bool {
+  $pluginManager = \Drupal::service('plugin.manager.remote_file_importer.data_source');
+  $pluginId = $dataSource->get('plugin_id');
+  if (!$pluginId || !$pluginManager->hasDefinition($pluginId)) {
+    return FALSE;
+  }
+  $plugin = $pluginManager->createInstance($pluginId);
+  return method_exists($plugin, 'supportsExcludedDirectories') && $plugin->supportsExcludedDirectories();
+}
+
+/**
+ * Add recycle-bin to the exclusion list of Remote File Importer data sources.
+ */
+function iqual_update_10011() {
+  if (!\Drupal::moduleExists('remote_file_importer')) {
+    return t('Remote File Importer is not installed, nothing to do.');
+  }
+
+  $storage = \Drupal::entityTypeManager()->getStorage('rfi_data_source');
+  $updated = [];
+
+  foreach ($storage->loadMultiple() as $dataSource) {
+    if (!_iqual_rfi_supports_excluded_directories($dataSource)) {
+      continue;
+    }
+
+    // Add recycle-bin to the exclusion list, keeping existing entries.
+    $settings = $dataSource->get('settings') ?: [];
+    $existing = array_map('trim', explode(',', $settings['exclude_directories'] ?? ''));
+    $existing = array_values(array_filter($existing, static fn (string $item): bool => $item !== ''));
+    if (in_array('recycle-bin', array_map('strtolower', $existing), TRUE)) {
+      continue;
+    }
+
+    $existing[] = 'recycle-bin';
+    $settings['exclude_directories'] = implode(',', $existing);
+    $dataSource->set('settings', $settings);
+    $dataSource->save();
+    $updated[] = $dataSource->id();
+  }
+
+  if (!empty($updated)) {
+    return t('Added recycle-bin exclusion to data source(s): @ids. Remember to export config.', [
+      '@ids' => implode(', ', $updated),
+    ]);
+  }
+
+  return t('All data sources supporting exclusion already exclude recycle-bin.');
+}
+
