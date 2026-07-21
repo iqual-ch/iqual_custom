@@ -1035,3 +1035,23 @@ function iqual_update_10010() {
   }
   return t("The 'frontpage' view was not found.");
 }
+
+/**
+ * Add 'webform_submission_*' to the antibot protected form IDs.
+ */
+function iqual_update_10011() {
+  $config = \Drupal::configFactory()->getEditable('antibot.settings');
+  if ($config->isNew()) {
+    return t('Antibot configuration not found.');
+  }
+
+  $form_ids = $config->get('form_ids') ?? [];
+  if (!in_array('webform_submission_*', $form_ids, TRUE)) {
+    $form_ids[] = 'webform_submission_*';
+    $config->set('form_ids', $form_ids);
+    $config->save();
+    return t("Added 'webform_submission_*' to the antibot form IDs.");
+  }
+
+  return t("The antibot form IDs already contain 'webform_submission_*'.");
+}
